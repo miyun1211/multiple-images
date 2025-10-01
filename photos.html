@@ -4,154 +4,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>商品詳細ページ</title>
+    <title>商品詳細</title>
     <style>
+        /* 基本的なリセット */
         body {
-            font-family: Arial, sans-serif;
             margin: 0;
-            padding: 20px;
+            font-family: sans-serif;
             background-color: #f4f4f4;
+            color: #333;
         }
 
+        /* 全体のコンテナ */
         .product-gallery {
-            max-width: 800px;
-            /* ギャラリー全体の最大幅 */
-            margin: 0 auto;
+            max-width: 960px;
+            /* 全体の最大幅 */
+            margin: 40px auto;
+            /* 上下に余白、左右中央寄せ */
             background-color: #fff;
             padding: 20px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            /* 軽い影 */
+            border-radius: 8px;
+            /* 角を丸く */
         }
 
-        /* メイン画像エリア */
+        /* メイン画像コンテナ */
         .main-image-container {
             position: relative;
             width: 100%;
-            padding-bottom: 125%;
-            /* 画像のアスペクト比に合わせて調整 (例: 4:5の場合125%) */
+            /* 親要素の幅いっぱいに */
+            aspect-ratio: 1 / 1;
+            /* 正方形を維持 (高さが幅に連動) */
             overflow: hidden;
-            background-color: #eee;
-            /* 画像が読み込まれるまでの背景 */
+            /* 画像がはみ出さないように */
+            margin-bottom: 20px;
+            display: flex;
+            /* 画像を中央に配置するためにFlexboxを使用 */
+            align-items: center;
+            justify-content: center;
         }
 
-        .main-image {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            /* 画像をコンテナに合わせてトリミング */
-            transition: opacity 0.3s ease-in-out;
+        .main-image-container img {
+            max-width: 100%;
+            /* コンテナに収まるように */
+            max-height: 100%;
+            /* コンテナに収まるように */
+            display: block;
+            /* 余分なスペースを削除 */
+            object-fit: contain;
+            /* アスペクト比を維持しつつ、コンテナに収める */
         }
 
-        /* 左右の矢印ボタン */
-        .gallery-nav {
+        /* 矢印スタイル */
+        .arrow {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            background-color: rgba(0, 0, 0, 0.4);
-            color: white;
-            border: none;
-            padding: 10px 15px;
+            font-size: 2.5em;
+            /* 矢印のサイズ */
+            color: #666;
+            /* 矢印の色 */
+            background-color: rgba(255, 255, 255, 0.7);
+            /* 半透明の背景 */
+            padding: 0 15px;
             cursor: pointer;
-            font-size: 24px;
+            user-select: none;
+            /* テキスト選択を無効化 */
+            border-radius: 4px;
             line-height: 1;
-            z-index: 10;
-            border-radius: 50%;
-            transition: background-color 0.2s ease;
-            display: flex;
-            /* 矢印アイコンを中央に */
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
+            /* 高さを揃える */
+            transition: background-color 0.3s ease, color 0.3s ease;
+            /* ホバー時のアニメーション */
         }
 
-        .gallery-nav:hover {
-            background-color: rgba(0, 0, 0, 0.6);
+        .arrow:hover {
+            background-color: rgba(0, 0, 0, 0.5);
+            /* ホバー時の背景色 */
+            color: #fff;
+            /* ホバー時の矢印の色 */
         }
 
-        .gallery-nav.prev {
+        .arrow.left {
             left: 10px;
         }
 
-        .gallery-nav.next {
+        .arrow.right {
             right: 10px;
         }
 
-        /* サムネイル画像エリア */
-        .thumbnail-gallery {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-            /* 70px以上の幅で自動調整 */
+        /* サムネイルコンテナ */
+        .thumbnail-container {
+            display: flex;
+            /* Flexboxで横並び */
+            justify-content: center;
+            /* 中央寄せ */
             gap: 10px;
-            margin-top: 20px;
+            /* サムネイル間のスペース */
+            flex-wrap: wrap;
+            /* サムネイル数が多い場合に折り返す */
         }
 
-        .thumbnail-item {
+        .thumbnail-container img {
+            width: 100px;
+            /* サムネイルの幅 */
+            height: 100px;
+            /* サムネイルの高さ */
+            object-fit: cover;
+            /* アスペクト比を維持しつつ、トリミングして表示 */
             cursor: pointer;
             border: 2px solid transparent;
-            overflow: hidden;
-            /* 画像がはみ出さないように */
+            /* デフォルトの枠線は透明 */
             border-radius: 4px;
-            transition: border-color 0.2s ease;
-            position: relative;
-            width: 100%;
-            padding-bottom: 125%;
-            /* サムネイルもアスペクト比を維持 (例: 4:5) */
+            /* 角を丸く */
+            transition: border-color 0.2s ease, transform 0.2s ease;
+            /* ホバー時のアニメーション */
         }
 
-        .thumbnail-item img {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 2px;
+        .thumbnail-container img:hover {
+            transform: translateY(-2px);
+            /* ホバーで少し浮き上がる */
         }
 
-        .thumbnail-item.active {
+        .thumbnail-container img.active {
             border-color: #007bff;
-            /* アクティブなサムネイルの枠線色 */
-        }
-
-        .thumbnail-item:hover {
-            border-color: #a0cfff;
-        }
-
-        /* カラーオプション (オプション) */
-        .color-options {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-            font-size: 0.9em;
-        }
-
-        .color-option {
-            text-align: center;
-            cursor: pointer;
-        }
-
-        .color-option.active .color-name {
-            font-weight: bold;
-            color: #007bff;
-        }
-
-        .color-thumb {
-            width: 50px;
-            height: 50px;
-            object-fit: cover;
-            border-radius: 4px;
-            border: 1px solid #ddd;
-        }
-
-        /* メイン画像とサムネイルの間のカラー名 */
-        .color-name {
-            display: block;
-            margin-top: 5px;
-            font-size: 0.8em;
-            color: #555;
+            /* 選択中のサムネイルの枠線 */
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.5);
+            /* 選択中の影 */
         }
     </style>
 </head>
@@ -159,213 +137,61 @@
 <body>
 
     <div class="product-gallery">
-        <!-- メイン画像表示エリア -->
         <div class="main-image-container">
-            <img src="images/black_main.jpg" alt="メイン画像" class="main-image" id="mainProductImage">
-            <button class="gallery-nav prev" id="prevImageButton">&#10094;</button>
-            <button class="gallery-nav next" id="nextImageButton">&#10095;</button>
+            <!-- ★ 変更点: src属性のパスを修正 -->
+            <img id="mainImage" src="images/n1.jpg" alt="メイン画像">
+            <div class="arrow left" onclick="changeMainImage(-1)">&#10094;</div>
+            <div class="arrow right" onclick="changeMainImage(1)">&#10095;</div>
         </div>
 
-        <!-- カラー選択とサムネイル画像ギャラリー -->
-        <div class="thumbnail-gallery" id="thumbnailGallery">
-            <!-- JavaScriptで画像が挿入されます -->
-            <!-- 例: -->
-            <!--
-            <div class="thumbnail-item active" data-src="images/black_main.jpg" data-color="ブラック">
-                <img src="images/black_thumb1.jpg" alt="ブラック サムネイル1">
-            </div>
-            <div class="thumbnail-item" data-src="images/black_side.jpg" data-color="ブラック">
-                <img src="images/black_thumb2.jpg" alt="ブラック サムネイル2">
-            </div>
-            <div class="thumbnail-item" data-src="images/beige_main.jpg" data-color="ベージュ">
-                <img src="images/beige_thumb1.jpg" alt="ベージュ サムネイル1">
-            </div>
-            <div class="thumbnail-item" data-src="images/navy_main.jpg" data-color="ネイビー">
-                <img src="images/navy_thumb1.jpg" alt="ネイビー サムネイル1">
-            </div>
-            -->
+        <div class="thumbnail-container">
+            <!-- ★ 変更点: 各サムネイルのsrc属性のパスを修正 -->
+            <img class="thumbnail active" src="images/n1.jpg" alt="サムネイル1" onclick="selectImage(this, 0)">
+            <img class="thumbnail" src="images/n2.jpg" alt="サムネイル2" onclick="selectImage(this, 1)">
+            <img class="thumbnail" src="images/n3.jpg" alt="サムネイル3" onclick="selectImage(this, 2)">
         </div>
-
-        <!-- カラーオプション（画像に「ブラック」「ベージュ」「ネイビー」のテキストがあるので、これも再現する場合） -->
-        <div class="color-options">
-            <!-- JavaScriptでカラーオプションが挿入されます -->
-            <!-- 例: -->
-            <!--
-            <div class="color-option active" data-color="ブラック">
-                <img src="images/black_color_thumb.jpg" alt="ブラック" class="color-thumb">
-                <span class="color-name">ブラック</span>
-            </div>
-            <div class="color-option" data-color="ベージュ">
-                <img src="images/beige_color_thumb.jpg" alt="ベージュ" class="color-thumb">
-                <span class="color-name">ベージュ</span>
-            </div>
-            <div class="color-option" data-color="ネイビー">
-                <img src="images/navy_color_thumb.jpg" alt="ネイビー" class="color-thumb">
-                <span class="color-name">ネイビー</span>
-            </div>
-            -->
-        </div>
-
     </div>
 
     <script>
-        const mainProductImage = document.getElementById('mainProductImage');
-        const thumbnailGallery = document.getElementById('thumbnailGallery');
-        const prevButton = document.getElementById('prevImageButton');
-        const nextButton = document.getElementById('nextImageButton');
-
-        // 商品画像のデータ（実際の画像パスに置き換えてください）
-        // 各オブジェクトは1つの画像を表し、そのメイン画像パスとサムネイル画像パスを持つ
-        // colorプロパティは、カラーオプションとサムネイルフィルタリングに使用
-        const images = [
-            { main: 'images/beer1.png', thumb: 'https://via.placeholder.com/70x87/333/fff?text=B1', color: 'ブラック' },
-            { main: 'https://via.placeholder.com/600x750/333/fff?text=ブラック_サイド', thumb: 'https://via.placeholder.com/70x87/333/fff?text=B2', color: 'ブラック' },
-            { main: 'https://via.placeholder.com/600x750/333/fff?text=ブラック_詳細', thumb: 'https://via.placeholder.com/70x87/333/fff?text=B3', color: 'ブラック' },
-            { main: 'https://via.placeholder.com/600x750/333/fff?text=ブラック_袖', thumb: 'https://via.placeholder.com/70x87/333/fff?text=B4', color: 'ブラック' },
-            { main: 'https://via.placeholder.com/600x750/333/fff?text=ブラック_ボタン', thumb: 'https://via.placeholder.com/70x87/333/fff?text=B5', color: 'ブラック' },
-            { main: 'https://via.placeholder.com/600x750/333/fff?text=ブラック_背面', thumb: 'https://via.placeholder.com/70x87/333/fff?text=B6', color: 'ブラック' },
-            { main: 'https://via.placeholder.com/600x750/333/fff?text=ブラック_コーデ1', thumb: 'https://via.placeholder.com/70x87/333/fff?text=B7', color: 'ブラック' },
-            { main: 'https://via.placeholder.com/600x750/333/fff?text=ブラック_コーデ2', thumb: 'https://via.placeholder.com/70x87/333/fff?text=B8', color: 'ブラック' },
-
-            { main: 'https://via.placeholder.com/600x750/a9a9a9/fff?text=ベージュ_メイン', thumb: 'https://via.placeholder.com/70x87/a9a9a9/fff?text=BE1', color: 'ベージュ' },
-            { main: 'https://via.placeholder.com/600x750/a9a9a9/fff?text=ベージュ_サイド', thumb: 'https://via.placeholder.com/70x87/a9a9a9/fff?text=BE2', color: 'ベージュ' },
-            { main: 'https://via.placeholder.com/600x750/a9a9a9/fff?text=ベージュ_詳細', thumb: 'https://via.placeholder.com/70x87/a9a9a9/fff?text=BE3', color: 'ベージュ' },
-            { main: 'https://via.placeholder.com/600x750/a9a9a9/fff?text=ベージュ_背面', thumb: 'https://via.placeholder.com/70x87/a9a9a9/fff?text=BE4', color: 'ベージュ' },
-            { main: 'https://via.placeholder.com/600x750/a9a9a9/fff?text=ベージュ_コーデ1', thumb: 'https://via.placeholder.com/70x87/a9a9a9/fff?text=BE5', color: 'ベージュ' },
-
-            { main: 'https://via.placeholder.com/600x750/000080/fff?text=ネイビー_コーデ2', thumb: 'https://via.placeholder.com/70x87/000080/fff?text=N5', color: 'ネイビー' },
+        const mainImage = document.getElementById('mainImage');
+        const thumbnails = document.querySelectorAll('.thumbnail');
+        // ★ 変更点: JavaScript内の画像パスの配列を修正
+        const imageSources = [
+            'images/n1.jpg',
+            'images/n2.jpg',
+            'images/n3.jpg'
         ];
-
         let currentIndex = 0;
-        let activeColor = 'ブラック'; // 初期表示のカラー
 
-        // サムネイルギャラリーをレンダリングする関数
-        function renderThumbnails(filterColor = null) {
-            thumbnailGallery.innerHTML = ''; // 一度クリア
-            const filteredImages = filterColor ? images.filter(img => img.color === filterColor) : images;
-
-            filteredImages.forEach((imgData, index) => {
-                const thumbItem = document.createElement('div');
-                thumbItem.classList.add('thumbnail-item');
-                if (imgData.main === mainProductImage.src) { // 現在表示中のメイン画像と一致するかでactive判定
-                    thumbItem.classList.add('active');
-                }
-                thumbItem.dataset.mainSrc = imgData.main; // メイン画像切り替え用
-                thumbItem.dataset.index = images.indexOf(imgData); // 全体でのインデックスを保持
-
-                const img = document.createElement('img');
-                img.src = imgData.thumb;
-                img.alt = `${imgData.color} サムネイル${index + 1}`;
-                thumbItem.appendChild(img);
-
-                thumbItem.addEventListener('click', () => {
-                    updateMainImage(parseInt(thumbItem.dataset.index));
-                });
-                thumbnailGallery.appendChild(thumbItem);
-            });
-        }
-
-        // メイン画像を更新し、アクティブなサムネイルを切り替える関数
-        function updateMainImage(index) {
-            if (index < 0 || index >= images.length) return;
-
+        function selectImage(selectedThumbnail, index) {
+            mainImage.src = imageSources[index];
             currentIndex = index;
-            mainProductImage.src = images[currentIndex].main;
-            activeColor = images[currentIndex].color; // メイン画像のカラーをアクティブカラーにする
-
-            // 全てのサムネイルからactiveクラスを削除
-            document.querySelectorAll('.thumbnail-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            // 現在のメイン画像に対応するサムネイルにactiveクラスを追加
-            const activeThumb = document.querySelector(`.thumbnail-item[data-index="${currentIndex}"]`);
-            if (activeThumb) {
-                activeThumb.classList.add('active');
-            }
-
-            // カラーオプションも更新
-            updateColorOptions();
+            thumbnails.forEach(thumb => thumb.classList.remove('active'));
+            selectedThumbnail.classList.add('active');
         }
 
-        // 左右の矢印ボタンのクリックイベント
-        prevButton.addEventListener('click', () => {
-            let newIndex = currentIndex - 1;
-            if (newIndex < 0) {
-                newIndex = images.length - 1; // 最後の画像へループ
+        function changeMainImage(direction) {
+            currentIndex += direction;
+            if (currentIndex < 0) {
+                currentIndex = imageSources.length - 1;
+            } else if (currentIndex >= imageSources.length) {
+                currentIndex = 0;
             }
-            updateMainImage(newIndex);
-        });
-
-        nextButton.addEventListener('click', () => {
-            let newIndex = currentIndex + 1;
-            if (newIndex >= images.length) {
-                newIndex = 0; // 最初の画像へループ
-            }
-            updateMainImage(newIndex);
-        });
-
-        // カラーオプションのレンダリングとイベントリスナー
-        const colorOptionsContainer = document.querySelector('.color-options');
-        const uniqueColors = [...new Set(images.map(img => img.color))]; // 重複なしのカラーリスト
-
-        function renderColorOptions() {
-            colorOptionsContainer.innerHTML = '';
-            uniqueColors.forEach(color => {
-                const colorOptionDiv = document.createElement('div');
-                colorOptionDiv.classList.add('color-option');
-                if (color === activeColor) {
-                    colorOptionDiv.classList.add('active');
-                }
-                colorOptionDiv.dataset.color = color;
-
-                const firstImageOfColor = images.find(img => img.color === color); // その色の最初の画像を取得
-                const img = document.createElement('img');
-                img.src = firstImageOfColor ? firstImageOfColor.thumb : 'https://via.placeholder.com/50x50/ccc/fff?text=?'; // 代替画像
-                img.alt = color;
-                img.classList.add('color-thumb');
-                colorOptionDiv.appendChild(img);
-
-                const span = document.createElement('span');
-                span.classList.add('color-name');
-                span.textContent = color;
-                colorOptionDiv.appendChild(span);
-
-                colorOptionDiv.addEventListener('click', () => {
-                    activeColor = color;
-                    // そのカラーの最初の画像をメインに表示
-                    const firstImageIndex = images.findIndex(img => img.color === color);
-                    if (firstImageIndex !== -1) {
-                        updateMainImage(firstImageIndex);
-                    }
-                    updateColorOptions(); // カラーオプションのactive状態を更新
-                    renderThumbnails(activeColor); // サムネイルをその色でフィルタリング
-                });
-                colorOptionsContainer.appendChild(colorOptionDiv);
-            });
-        }
-
-        // カラーオプションのactive状態を更新する関数
-        function updateColorOptions() {
-            document.querySelectorAll('.color-option').forEach(option => {
-                if (option.dataset.color === activeColor) {
-                    option.classList.add('active');
+            mainImage.src = imageSources[currentIndex];
+            thumbnails.forEach((thumb, index) => {
+                if (index === currentIndex) {
+                    thumb.classList.add('active');
                 } else {
-                    option.classList.remove('active');
+                    thumb.classList.remove('active');
                 }
             });
         }
 
-
-        // 初期化処理
-        document.addEventListener('DOMContentLoaded', () => {
-            // 最初の画像をメインに表示
-            if (images.length > 0) {
-                updateMainImage(0);
-                renderThumbnails(activeColor); // 初回はアクティブカラーでフィルタリング
-                renderColorOptions();
-            }
+        window.addEventListener('load', () => {
+            selectImage(thumbnails[0], 0);
         });
     </script>
+
 </body>
 
 </html>
