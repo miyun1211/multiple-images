@@ -53,6 +53,15 @@
             /* 余分なスペースを削除 */
             object-fit: contain;
             /* アスペクト比を維持しつつ、コンテナに収める */
+            cursor: pointer;
+            /* ★ 追加: クリックできることを示すカーソルに変更 */
+            transition: opacity 0.2s ease;
+            /* ★ 追加: ホバー時のアニメーション */
+        }
+
+        /* ★ 追加: メイン画像ホバー時に少し透過させる */
+        .main-image-container img:hover {
+            opacity: 0.8;
         }
 
         /* 矢印スタイル */
@@ -131,6 +140,126 @@
             box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.5);
             /* 選択中の影 */
         }
+
+        /* --- ★ ここからモーダル用のCSSを追加 --- */
+        /* モーダル背景 */
+        .modal-overlay {
+            position: fixed;
+            /* 画面全体に固定表示 */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            /* 半透明の黒い背景 */
+            display: none;
+            /* 初期状態では非表示 */
+            align-items: center;
+            /* 拡大画像を上下中央に配置 */
+            justify-content: center;
+            /* 拡大画像を左右中央に配置 */
+            z-index: 1000;
+            /* 他のどの要素よりも手前に表示するための設定 */
+        }
+
+        /* モーダル表示時に適用するクラス */
+        .modal-overlay.modal-open {
+            display: flex;
+            /* JavaScriptでこのクラスが付くとFlexboxで表示される */
+        }
+
+        /* 拡大画像 */
+        .modal-content {
+            max-width: 90vw;
+            /* 画面幅の90%を最大幅に (vwはviewport widthの略) */
+            max-height: 80vh;
+            /* 画面高さの80%を最大高さに (vhはviewport heightの略) */
+            object-fit: contain;
+        }
+
+        /* 閉じるボタン */
+        .modal-close-button {
+            position: absolute;
+            /* 親要素(.modal-overlay)を基準に絶対配置 */
+            top: 20px;
+            right: 30px;
+            color: #fff;
+            /* ボタンの色 */
+            font-size: 40px;
+            /* ボタンの大きさ */
+            font-weight: bold;
+            cursor: pointer;
+            /* クリックできることを示すカーソル */
+            transition: color 0.3s ease;
+            /* ホバー時の色変化を滑らかに */
+            z-index: 1010;
+            /* ★ 追加: 矢印より手前に */
+        }
+
+        /* 閉じるボタンのホバー効果 */
+        .modal-close-button:hover {
+            color: #bbb;
+            /* ホバー時に少し色を薄くする */
+        }
+
+        /* ★ ここからモーダル内の矢印とページネーションのCSSを追加 */
+        /* モーダル内の矢印 */
+        .modal-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 3em;
+            color: #fff;
+            cursor: pointer;
+            user-select: none;
+            padding: 10px;
+            transition: color 0.3s ease;
+            z-index: 1010;
+            /* 他の要素より手前に */
+        }
+
+        .modal-arrow:hover {
+            color: #bbb;
+        }
+
+        .modal-arrow.left {
+            left: 20px;
+        }
+
+        .modal-arrow.right {
+            right: 20px;
+        }
+
+        /* ページネーション（インジケーター）のコンテナ */
+        .modal-pagination {
+            position: absolute;
+            bottom: 100px;
+            /* 画面下からの距離 */
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            /* ドット間のスペース */
+        }
+
+        /* ページネーションの各ドット（〇） */
+        .pagination-dot {
+            width: 12px;
+            height: 12px;
+            background-color: #888;
+            border-radius: 50%;
+            /* 円形にする */
+            transition: background-color 0.3s ease;
+        }
+
+        /* アクティブなドット（●） */
+        .pagination-dot.active {
+            background-color: #fff;
+        }
+
+        /* ★ モーダル内の追加CSSはここまで */
+
+        /* --- ★ モーダル用のCSSはここまで --- */
     </style>
 </head>
 
@@ -138,24 +267,43 @@
 
     <div class="product-gallery">
         <div class="main-image-container">
-            <!-- ★ 変更点: src属性のパスを修正 -->
             <img id="mainImage" src="images/n1.jpg" alt="メイン画像">
             <div class="arrow left" onclick="changeMainImage(-1)">&#10094;</div>
             <div class="arrow right" onclick="changeMainImage(1)">&#10095;</div>
         </div>
 
         <div class="thumbnail-container">
-            <!-- ★ 変更点: 各サムネイルのsrc属性のパスを修正 -->
             <img class="thumbnail active" src="images/n1.jpg" alt="サムネイル1" onclick="selectImage(this, 0)">
             <img class="thumbnail" src="images/n2.jpg" alt="サムネイル2" onclick="selectImage(this, 1)">
             <img class="thumbnail" src="images/n3.jpg" alt="サムネイル3" onclick="selectImage(this, 2)">
         </div>
     </div>
 
+    <!-- --- ★ ここからモーダルウィンドウ用のHTMLを追加 --- -->
+    <!-- id="modal" : JavaScriptから操作するためのID -->
+    <div id="modal" class="modal-overlay">
+        <!-- id="closeButton" : 閉じるボタンをJavaScriptから操作するためのID -->
+        <!-- &times; は ×記号 を表示するためのHTMLエンティティ -->
+        <span id="closeButton" class="modal-close-button">&times;</span>
+        <!-- id="modalImage" : 拡大画像を表示するimgタグをJavaScriptから操作するためのID -->
+        <img id="modalImage" class="modal-content" src="" alt="拡大画像">
+
+        <!-- ★ ここからモーダル内の矢印とページネーションのHTMLを追加 -->
+        <div id="modalArrowLeft" class="modal-arrow left">&#10094;</div>
+        <div id="modalArrowRight" class="modal-arrow right">&#10095;</div>
+        <div id="modalPagination" class="modal-pagination">
+            <!-- ページネーションのドットはJavaScriptで動的に生成されます -->
+        </div>
+        <!-- ★ 追加HTMLはここまで -->
+
+    </div>
+    <!-- --- ★ モーダル用のHTMLはここまで --- -->
+
+
     <script>
         const mainImage = document.getElementById('mainImage');
         const thumbnails = document.querySelectorAll('.thumbnail');
-        // ★ 変更点: JavaScript内の画像パスの配列を修正
+        // JavaScript内の画像パスの配列
         const imageSources = [
             'images/n1.jpg',
             'images/n2.jpg',
@@ -163,6 +311,7 @@
         ];
         let currentIndex = 0;
 
+        // サムネイルがクリックされたときにメイン画像を切り替える関数
         function selectImage(selectedThumbnail, index) {
             mainImage.src = imageSources[index];
             currentIndex = index;
@@ -170,6 +319,7 @@
             selectedThumbnail.classList.add('active');
         }
 
+        // 矢印がクリックされたときにメイン画像を切り替える関数
         function changeMainImage(direction) {
             currentIndex += direction;
             if (currentIndex < 0) {
@@ -187,9 +337,88 @@
             });
         }
 
+        // ページの読み込みが完了したときに最初の画像を選択状態にする
         window.addEventListener('load', () => {
             selectImage(thumbnails[0], 0);
         });
+
+        /* --- ★ ここからモーダル用のJavaScriptを追加 --- */
+
+        // 1. モーダル関連のHTML要素を取得
+        const modal = document.getElementById('modal');
+        const modalImage = document.getElementById('modalImage');
+        const closeButton = document.getElementById('closeButton');
+
+        // ★ 2. 追加したモーダル内の要素を取得
+        const modalArrowLeft = document.getElementById('modalArrowLeft');
+        const modalArrowRight = document.getElementById('modalArrowRight');
+        const modalPagination = document.getElementById('modalPagination');
+
+        // ★ 3. 最初に一度だけ、画像の数だけページネーションのドットを生成する
+        imageSources.forEach((src, index) => {
+            const dot = document.createElement('span'); // span要素を作成
+            dot.classList.add('pagination-dot'); // CSSクラスを追加
+            dot.dataset.index = index; // インデックス番号をデータとして保持
+            modalPagination.appendChild(dot); // コンテナに追加
+        });
+        // 全てのドット要素を一度に取得しておく
+        const paginationDots = document.querySelectorAll('.pagination-dot');
+
+        // ★ 4. ページネーションの表示を更新する関数
+        function updatePagination() {
+            paginationDots.forEach((dot, index) => {
+                if (index === currentIndex) {
+                    dot.classList.add('active'); // 現在の画像に対応するドットをアクティブにする
+                } else {
+                    dot.classList.remove('active'); // それ以外は非アクティブにする
+                }
+            });
+        }
+
+        // ★ 5. モーダル内で画像を切り替える関数
+        function changeModalImage(direction) {
+            currentIndex += direction; // インデックスを増減
+            // インデックスが範囲外になったらループさせる
+            if (currentIndex < 0) {
+                currentIndex = imageSources.length - 1;
+            } else if (currentIndex >= imageSources.length) {
+                currentIndex = 0;
+            }
+            // モーダル内の画像ソースを更新
+            modalImage.src = imageSources[currentIndex];
+            // ページネーションの表示も更新
+            updatePagination();
+        }
+
+        // 6. メイン画像がクリックされた時の処理
+        mainImage.addEventListener('click', () => {
+            modalImage.src = mainImage.src;
+            modal.classList.add('modal-open');
+            updatePagination(); // ★ モーダル表示時にページネーションを更新
+        });
+
+        // 7. 閉じるボタンがクリックされた時の処理
+        closeButton.addEventListener('click', () => {
+            modal.classList.remove('modal-open');
+        });
+
+        // 8. モーダルの背景がクリックされた時も閉じる処理
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                modal.classList.remove('modal-open');
+            }
+        });
+
+        // ★ 9. モーダル内の矢印がクリックされた時の処理
+        modalArrowLeft.addEventListener('click', () => {
+            changeModalImage(-1); // 前の画像へ
+        });
+
+        modalArrowRight.addEventListener('click', () => {
+            changeModalImage(1); // 次の画像へ
+        });
+        /* --- ★ モーダル用のJavaScriptはここまで --- */
+
     </script>
 
 </body>
