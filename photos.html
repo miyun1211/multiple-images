@@ -69,21 +69,30 @@
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            font-size: 2.5em;
-            /* 矢印のサイズ */
+            /* ★ ここから変更 */
+            width: 44px;
+            /* 幅を指定 */
+            height: 44px;
+            /* 高さを指定 */
+            border-radius: 50%;
+            /* 角を完全に丸くする */
+            display: flex;
+            /* Flexboxで中央揃え */
+            align-items: center;
+            /* 上下中央揃え */
+            justify-content: center;
+            /* 左右中央揃え */
+            padding: 0;
+            /* paddingをリセット */
+            font-size: 1.8em;
+            /* フォントサイズを少し調整 */
+            /* ★ ここまで変更 */
             color: #666;
-            /* 矢印の色 */
             background-color: rgba(255, 255, 255, 0.7);
-            /* 半透明の背景 */
-            padding: 0 15px;
             cursor: pointer;
             user-select: none;
-            /* テキスト選択を無効化 */
-            border-radius: 4px;
-            line-height: 1;
-            /* 高さを揃える */
             transition: background-color 0.3s ease, color 0.3s ease;
-            /* ホバー時のアニメーション */
+            z-index: 10;
         }
 
         .arrow:hover {
@@ -208,12 +217,29 @@
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            font-size: 3em;
-            color: #fff;
+            width: 45px;
+            /* 幅を指定 */
+            height: 45px;
+            /* 高さを指定 */
+            border-radius: 50%;
+            /* 角を完全に丸くする */
+            background-color: rgba(194, 180, 180, 0.671);
+            /* 背景色を追加 */
+            display: flex;
+            /* Flexboxで中央揃え */
+            align-items: center;
+            /* 上下中央揃え */
+            justify-content: center;
+            /* 左右中央揃え */
+            padding: 0;
+            /* paddingをリセット */
+            font-size: 2.2em;
+            /* フォントサイズを少し調整 */
+            color: #585454;
             cursor: pointer;
             user-select: none;
             padding: 10px;
-            transition: color 0.3s ease;
+            transition: background-color 0.3s ease, color 0.3s ease;
             z-index: 1010;
             /* 他の要素より手前に */
         }
