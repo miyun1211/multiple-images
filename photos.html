@@ -276,6 +276,7 @@
             border-radius: 50%;
             /* 円形にする */
             transition: background-color 0.3s ease;
+            cursor: pointer;
         }
 
         /* アクティブなドット（●） */
@@ -384,21 +385,35 @@
         imageSources.forEach((src, index) => {
             const dot = document.createElement('span'); // span要素を作成
             dot.classList.add('pagination-dot'); // CSSクラスを追加
-            dot.dataset.index = index; // インデックス番号をデータとして保持
+
+            // ドットがクリックされた時の処理を追加
+            dot.addEventListener('click', () => {
+                jumpToImage(index); // 対応するインデックスの画像にジャンプ
+            });
+
             modalPagination.appendChild(dot); // コンテナに追加
         });
         // 全てのドット要素を一度に取得しておく
         const paginationDots = document.querySelectorAll('.pagination-dot');
 
-        // ★ 4. ページネーションの表示を更新する関数
-        function updatePagination() {
+        /* ★ 変更点: 画像とページネーションの表示をまとめて更新する関数を作成 */
+        function updateModalView() {
+            // 画像のsrcを更新
+            modalImage.src = imageSources[currentIndex];
+            // ページネーションの表示を更新
             paginationDots.forEach((dot, index) => {
                 if (index === currentIndex) {
-                    dot.classList.add('active'); // 現在の画像に対応するドットをアクティブにする
+                    dot.classList.add('active');
                 } else {
-                    dot.classList.remove('active'); // それ以外は非アクティブにする
+                    dot.classList.remove('active');
                 }
             });
+        }
+
+        /* ★ 追加: 特定のインデックスに直接ジャンプする関数 */
+        function jumpToImage(index) {
+            currentIndex = index;
+            updateModalView();
         }
 
         // ★ 5. モーダル内で画像を切り替える関数
@@ -444,6 +459,39 @@
             changeModalImage(1); // 次の画像へ
         });
         /* --- ★ モーダル用のJavaScriptはここまで --- */
+
+        /* ★★★ ここからスワイプ機能の追加 ★★★ */
+        let touchStartX = 0;
+        let touchEndX = 0;
+        const swipeThreshold = 50; // スワイプと判定するための最低移動距離(ピクセル)
+
+        // タッチ開始時の処理
+        modal.addEventListener('touchstart', (event) => {
+            // event.touches[0] は現在画面に触れている最初の指の情報
+            touchStartX = event.touches[0].clientX;
+        });
+
+        // タッチ終了時の処理
+        modal.addEventListener('touchend', (event) => {
+            // event.changedTouches[0] は画面から離れた指の情報
+            touchEndX = event.changedTouches[0].clientX;
+            handleSwipe();
+        });
+
+        // スワイプ方向を判定して画像を切り替える関数
+        function handleSwipe() {
+            const swipeDistance = touchEndX - touchStartX;
+
+            // 右から左へのスワイプ（次の画像へ）
+            if (swipeDistance < -swipeThreshold) {
+                changeModalImage(1);
+            }
+            // 左から右へのスワイプ（前の画像へ）
+            else if (swipeDistance > swipeThreshold) {
+                changeModalImage(-1);
+            }
+        }
+        /* ★★★ スワイプ機能の追加はここまで ★★★ */
 
     </script>
 
