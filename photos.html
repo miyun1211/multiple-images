@@ -20,10 +20,11 @@
            商品ギャラリー全体のコンテナ
            ======================================== */
         .product-gallery {
+            width: 90vw;
             max-width: 960px;
-            margin: 40px auto;
+            margin: 4vw auto;
             background-color: #fff;
-            padding: 20px;
+            padding: 2.5vw;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             border-radius: 8px;
         }
@@ -37,7 +38,7 @@
             width: 100%;
             aspect-ratio: 1 / 1;
             overflow: hidden;
-            margin-bottom: 20px;
+            margin-bottom: 2vw;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -50,7 +51,6 @@
             display: block;
             object-fit: contain;
             cursor: grab;
-            /* 掴めるカーソル */
             transition: opacity 0.2s ease;
         }
 
@@ -63,20 +63,23 @@
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
+
+            /* ★ 変更点: 固定のピクセルサイズに戻す */
             width: 44px;
             height: 44px;
+
             border-radius: 50%;
-            /* 円形にする */
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 0;
+
+            /* ★ 変更点: 固定のフォントサイズに戻す */
             font-size: 1.8em;
+
             color: #666;
             background-color: rgba(255, 255, 255, 0.7);
             cursor: pointer;
             user-select: none;
-            /* テキスト選択の無効化 */
             transition: background-color 0.3s ease, color 0.3s ease;
             z-index: 10;
         }
@@ -87,11 +90,11 @@
         }
 
         .arrow.left {
-            left: 10px;
+            left: 1.5vw;
         }
 
         .arrow.right {
-            right: 10px;
+            right: 1.5vw;
         }
 
 
@@ -102,30 +105,31 @@
         .thumbnail-container {
             display: flex;
             justify-content: center;
-            gap: 10px;
+            gap: 1.5vw;
             flex-wrap: wrap;
         }
 
         /* サムネイル画像本体 */
         .thumbnail-container img {
-            width: 100px;
-            height: 100px;
+            width: 10vw;
+            height: 10vw;
+            max-width: 100px;
+            max-height: 100px;
             object-fit: cover;
             cursor: pointer;
-            border: 2px solid transparent;
+            border: 0.3vw solid transparent;
             border-radius: 4px;
             transition: border-color 0.2s ease, transform 0.2s ease;
         }
 
         .thumbnail-container img:hover {
             transform: translateY(-2px);
-            /* ホバー時に少し浮き上がる */
         }
 
         /* 選択中のサムネイル */
         .thumbnail-container img.active {
             border-color: #007bff;
-            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.5);
+            box-shadow: 0 0 0 0.3vw rgba(0, 123, 255, 0.5);
         }
 
         /* ========================================
