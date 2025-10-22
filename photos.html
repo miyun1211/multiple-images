@@ -32,7 +32,6 @@
         /* ========================================
            メイン画像表示エリア
            ======================================== */
-        /* メイン画像と矢印を囲むコンテナ */
         .main-image-container {
             position: relative;
             width: 100%;
@@ -44,7 +43,6 @@
             justify-content: center;
         }
 
-        /* メイン画像本体 */
         .main-image-container img {
             max-width: 100%;
             max-height: 100%;
@@ -58,24 +56,18 @@
             opacity: 0.8;
         }
 
-        /* メイン画像エリアの左右矢印 */
         .arrow {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-
-            /* ★ 変更点: 固定のピクセルサイズに戻す */
-            width: 44px;
-            height: 44px;
-
+            width: clamp(34px, 5vw, 50px);
+            height: clamp(34px, 5vw, 50px);
+            font-size: clamp(16px, 2.5vw, 24px);
+            font-weight: bold;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-
-            /* ★ 変更点: 固定のフォントサイズに戻す */
-            font-size: 1.8em;
-
             color: #666;
             background-color: rgba(255, 255, 255, 0.7);
             cursor: pointer;
@@ -97,27 +89,42 @@
             right: 1.5vw;
         }
 
+        /* ========================================
+           ★ 追加: 画像の説明文エリアのスタイル
+           ======================================== */
+        .image-description {
+            text-align: center;
+            margin: 0 auto 2vw;
+            font-size: clamp(14px, 1.8vw, 18px);
+            color: #555;
+            min-height: 1.2em;
+        }
 
         /* ========================================
            サムネイル画像エリア
            ======================================== */
-        /* サムネイル画像を囲むコンテナ */
-        .thumbnail-container {
-            display: flex;
-            justify-content: center;
-            gap: 1.5vw;
-            flex-wrap: wrap;
+        .thumbnail-slider-wrapper {
+            position: relative;
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-top: 5px;
+            /* ホバーで動くための上の余白 */
         }
 
-        /* サムネイル画像本体 */
+        .thumbnail-container {
+            display: flex;
+            gap: 1.5vw;
+        }
+
         .thumbnail-container img {
-            width: 10vw;
-            height: 10vw;
-            max-width: 100px;
-            max-height: 100px;
+            width: clamp(60px, 28%, 120px);
+            flex-shrink: 0;
+            height: auto;
+            aspect-ratio: 1 / 1;
             object-fit: cover;
             cursor: pointer;
-            border: 0.3vw solid transparent;
+            border: 3px solid transparent;
             border-radius: 4px;
             transition: border-color 0.2s ease, transform 0.2s ease;
         }
@@ -126,16 +133,31 @@
             transform: translateY(-2px);
         }
 
-        /* 選択中のサムネイル */
         .thumbnail-container img.active {
             border-color: #007bff;
-            box-shadow: 0 0 0 0.3vw rgba(0, 123, 255, 0.5);
+        }
+
+        .thumbnail-slider-wrapper::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .thumbnail-slider-wrapper::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .thumbnail-slider-wrapper::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        .thumbnail-slider-wrapper::-webkit-scrollbar-thumb:hover {
+            background: #555;
         }
 
         /* ========================================
            モーダルウィンドウ (拡大表示)
            ======================================== */
-        /* モーダル全体の背景 */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -144,7 +166,6 @@
             height: 100%;
             background-color: rgba(0, 0, 0, 0.8);
             display: none;
-            /* 初期状態は非表示 */
             align-items: center;
             justify-content: center;
             z-index: 1000;
@@ -152,19 +173,15 @@
 
         .modal-overlay.modal-open {
             display: flex;
-            /* このクラスが付くと表示される */
         }
 
-        /* 拡大表示される画像 */
         .modal-content {
             max-width: 90vw;
             max-height: 80vh;
             object-fit: contain;
             cursor: grab;
-            /* 掴めるカーソル */
         }
 
-        /* 右上の閉じるボタン */
         .modal-close-button {
             position: absolute;
             top: 20px;
@@ -181,20 +198,20 @@
             color: #bbb;
         }
 
-        /* モーダル内の左右矢印 */
         .modal-arrow {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            width: 50px;
-            height: 50px;
+            width: 56px;
+            height: 56px;
+            font-size: 2.5em;
+            font-weight: bold;
             border-radius: 50%;
             background-color: rgba(0, 0, 0, 0.4);
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 0;
-            font-size: 2.2em;
             color: #fff;
             cursor: pointer;
             user-select: none;
@@ -217,17 +234,15 @@
         /* ========================================
            モーダル内のページネーション (〇●〇)
            ======================================== */
-        /* ドット全体を囲むコンテナ */
         .modal-pagination {
             position: absolute;
-            bottom: 20px;
+            bottom: 100px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
             gap: 15px;
         }
 
-        /* 通常のドット (〇) */
         .pagination-dot {
             width: 12px;
             height: 12px;
@@ -237,7 +252,6 @@
             cursor: pointer;
         }
 
-        /* 選択中のドット (●) */
         .pagination-dot.active {
             background-color: #fff;
         }
@@ -245,17 +259,17 @@
 </head>
 
 <body>
-    <!-- HTMLは変更なし -->
     <div class="product-gallery">
         <div class="main-image-container">
-            <img id="mainImage" src="images/n1.jpg" alt="メイン画像">
+            <img id="mainImage" src="" alt="メイン画像">
             <div class="arrow left" onclick="changeMainImage(-1)">&#10094;</div>
             <div class="arrow right" onclick="changeMainImage(1)">&#10095;</div>
         </div>
-        <div class="thumbnail-container">
-            <img class="thumbnail active" src="images/n1.jpg" alt="サムネイル1" onclick="selectImage(this, 0)">
-            <img class="thumbnail" src="images/n2.jpg" alt="サムネイル2" onclick="selectImage(this, 1)">
-            <img class="thumbnail" src="images/n3.jpg" alt="サムネイル3" onclick="selectImage(this, 2)">
+
+        <p id="imageDescription" class="image-description"></p>
+
+        <div class="thumbnail-slider-wrapper">
+            <div id="thumbnailContainer" class="thumbnail-container"></div>
         </div>
     </div>
     <div id="modal" class="modal-overlay">
@@ -266,24 +280,46 @@
         <div id="modalPagination" class="modal-pagination"></div>
     </div>
 
-
     <script>
-        const mainImage = document.getElementById('mainImage');
-        const thumbnails = document.querySelectorAll('.thumbnail');
-        // JavaScript内の画像パスの配列
+        // ★ 変更点: 画像パスと説明文をオブジェクトで管理する
         const imageSources = [
-            'images/n1.jpg',
-            'images/n2.jpg',
-            'images/n3.jpg'
+            { src: 'images/1.png', description: '１番目の画像の説明です。' },
+            { src: 'images/2.png', description: 'これが２番目の画像です。' },
+            { src: 'images/3.png', description: '３番目の画像についての文章。' },
+            { src: 'images/4.png', description: '４番目の画像です。' },
+            { src: 'images/5.png', description: '最後の５番目の画像になります。' }
         ];
         let currentIndex = 0;
 
-        // サムネイルがクリックされたときにメイン画像を切り替える関数
-        function selectImage(selectedThumbnail, index) {
-            mainImage.src = imageSources[index];
+        // ★ 変更点: 必要な要素をここでまとめて取得
+        const mainImage = document.getElementById('mainImage');
+        const imageDescription = document.getElementById('imageDescription');
+        const thumbnailContainer = document.getElementById('thumbnailContainer');
+
+        // サムネイルを動的に生成するためのコード
+        imageSources.forEach((item, index) => {
+            const img = document.createElement('img');
+            img.src = item.src;
+            img.alt = `サムネイル${index + 1}`;
+            img.addEventListener('click', () => selectImage(index));
+            thumbnailContainer.appendChild(img);
+        });
+        const allThumbnails = document.querySelectorAll('.thumbnail-container img');
+
+        // 新しいサムネイルに対応した関数
+        function selectImage(index) {
             currentIndex = index;
-            thumbnails.forEach(thumb => thumb.classList.remove('active'));
-            selectedThumbnail.classList.add('active');
+            mainImage.src = imageSources[currentIndex].src;
+            imageDescription.textContent = imageSources[currentIndex].description;
+
+            allThumbnails.forEach(thumb => thumb.classList.remove('active'));
+            allThumbnails[currentIndex].classList.add('active');
+
+            allThumbnails[currentIndex].scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest',
+                inline: 'center'
+            });
         }
 
         // 矢印がクリックされたときにメイン画像を切り替える関数
@@ -294,85 +330,46 @@
             } else if (currentIndex >= imageSources.length) {
                 currentIndex = 0;
             }
-            mainImage.src = imageSources[currentIndex];
-            // ★ 変更点: サムネイルのアクティブ表示も更新
-            thumbnails.forEach((thumb, index) => {
-                thumb.classList.toggle('active', index === currentIndex);
-            });
+            selectImage(currentIndex);
         }
 
         // ページの読み込みが完了したときに最初の画像を選択状態にする
         window.addEventListener('load', () => {
-            selectImage(thumbnails[0], 0);
+            selectImage(0);
         });
 
-        /* --- ★ ここからモーダル用のJavaScriptを追加 --- */
-
-        // 1. モーダル関連のHTML要素を取得
+        /* --- モーダルとスワイプ機能のJavaScript --- */
         const modal = document.getElementById('modal');
         const modalImage = document.getElementById('modalImage');
         const closeButton = document.getElementById('closeButton');
-
-        // ★ 2. 追加したモーダル内の要素を取得
         const modalArrowLeft = document.getElementById('modalArrowLeft');
         const modalArrowRight = document.getElementById('modalArrowRight');
         const modalPagination = document.getElementById('modalPagination');
 
-        // ★ 3. 最初に一度だけ、画像の数だけページネーションのドットを生成する
-        imageSources.forEach((src, index) => {
+        imageSources.forEach((item, index) => {
             const dot = document.createElement('span');
             dot.classList.add('pagination-dot');
             dot.addEventListener('click', () => { jumpToImage(index); });
             modalPagination.appendChild(dot);
         });
+
         const paginationDots = document.querySelectorAll('.pagination-dot');
 
-        /* ★ 変更点: 画像とページネーションの表示をまとめて更新する関数を作成 */
         function updateModalView() {
-            modalImage.src = imageSources[currentIndex];
+            modalImage.src = imageSources[currentIndex].src;
             paginationDots.forEach((dot, index) => {
                 dot.classList.toggle('active', index === currentIndex);
             });
         }
 
-        /* ★ 追加: 特定のインデックスに直接ジャンプする関数 */
-        function jumpToImage(index) {
-            currentIndex = index;
-            updateModalView();
-        }
-
-        // ★ 5. モーダル内で画像を切り替える関数 (矢印クリックやスワイプ用)
-        function changeModalImage(direction) {
-            currentIndex += direction;
-            if (currentIndex < 0) { currentIndex = imageSources.length - 1; }
-            else if (currentIndex >= imageSources.length) { currentIndex = 0; }
-            updateModalView();
-        }
-
-        // 6. メイン画像がクリックされた時の処理
-        mainImage.addEventListener('click', (event) => {
-            // ★ 追加: ドラッグ操作の直後ならモーダルを開かないようにする
-            if (isMainDraggingJustFinished) {
-                isMainDraggingJustFinished = false; // フラグをリセット
-                return; // 処理を中断
-            }
-            modal.classList.add('modal-open');
-            updateModalView();
-        });
-
-        // 7. 閉じるボタンがクリックされた時の処理
+        function jumpToImage(index) { currentIndex = index; updateModalView(); }
+        function changeModalImage(direction) { currentIndex += direction; if (currentIndex < 0) { currentIndex = imageSources.length - 1; } else if (currentIndex >= imageSources.length) { currentIndex = 0; } updateModalView(); }
+        mainImage.addEventListener('click', (event) => { if (isMainDraggingJustFinished) { isMainDraggingJustFinished = false; return; } modal.classList.add('modal-open'); updateModalView(); });
         closeButton.addEventListener('click', () => { modal.classList.remove('modal-open'); });
-        // 8. モーダルの背景がクリックされた時も閉じる処理
         modal.addEventListener('click', (event) => { if (event.target === modal) { modal.classList.remove('modal-open'); } });
-        // ★ 9. モーダル内の矢印がクリックされた時の処理
         modalArrowLeft.addEventListener('click', () => { changeModalImage(-1); });
         modalArrowRight.addEventListener('click', () => { changeModalImage(1); });
-        /* --- ★ モーダル用のJavaScriptはここまで --- */
-
-        /* ★★★ ここからモーダル用のスワイプ機能 ★★★ */
-        let touchStartX = 0;
-        let touchEndX = 0;
-        const swipeThreshold = 50;
+        let touchStartX = 0; let touchEndX = 0; const swipeThreshold = 50;
         modal.addEventListener('touchstart', (event) => { touchStartX = event.touches[0].clientX; });
         modal.addEventListener('touchend', (event) => { touchEndX = event.changedTouches[0].clientX; handleModalSwipe(); });
         function handleModalSwipe() { const swipeDistance = touchEndX - touchStartX; if (swipeDistance < -swipeThreshold) { changeModalImage(1); } else if (swipeDistance > swipeThreshold) { changeModalImage(-1); } }
@@ -381,68 +378,15 @@
         modal.addEventListener('mouseup', (event) => { if (isModalDragging) { isModalDragging = false; touchEndX = event.clientX; modalImage.style.cursor = 'grab'; handleModalSwipe(); } });
         modal.addEventListener('mouseleave', (event) => { if (isModalDragging) { isModalDragging = false; touchEndX = event.clientX; modalImage.style.cursor = 'grab'; handleModalSwipe(); } });
         modal.addEventListener('mousemove', (event) => { if (isModalDragging) { event.preventDefault(); } });
-        /* ★★★ モーダル用のスワイプ機能はここまで ★★★ */
-
-        /* ★★★ ここからメイン画像用のスワイプ＆ドラッグ機能を追加 ★★★ */
         const mainImageContainer = document.querySelector('.main-image-container');
-        let isMainDragging = false;
-        let isMainDraggingJustFinished = false; // ドラッグ直後かの判定フラグ
-        let mainTouchStartX = 0;
-        let mainTouchEndX = 0;
-
-        // メイン画像のスワイプ方向を判定して画像を切り替える関数
-        function handleMainSwipe() {
-            const swipeDistance = mainTouchEndX - mainTouchStartX;
-            if (swipeDistance < -swipeThreshold) {
-                changeMainImage(1);
-            } else if (swipeDistance > swipeThreshold) {
-                changeMainImage(-1);
-            }
-        }
-
-        // --- スマホ用 ---
-        mainImageContainer.addEventListener('touchstart', (event) => {
-            mainTouchStartX = event.touches[0].clientX;
-        });
-        mainImageContainer.addEventListener('touchend', (event) => {
-            mainTouchEndX = event.changedTouches[0].clientX;
-            handleMainSwipe();
-        });
-
-        // --- PC用 ---
-        mainImageContainer.addEventListener('mousedown', (event) => {
-            isMainDragging = true;
-            mainTouchStartX = event.clientX;
-            mainImage.style.cursor = 'grabbing';
-            event.preventDefault();
-        });
-        mainImageContainer.addEventListener('mouseup', (event) => {
-            if (isMainDragging) {
-                isMainDragging = false;
-                mainTouchEndX = event.clientX;
-                mainImage.style.cursor = 'grab';
-                // ドラッグ距離がわずかな場合はスワイプとみなさない
-                if (Math.abs(mainTouchEndX - mainTouchStartX) > 10) {
-                    isMainDraggingJustFinished = true; // ドラッグ直後フラグを立てる
-                    setTimeout(() => { isMainDraggingJustFinished = false; }, 100); // すぐにフラグを解除
-                }
-                handleMainSwipe();
-            }
-        });
-        mainImageContainer.addEventListener('mouseleave', (event) => {
-            if (isMainDragging) {
-                isMainDragging = false;
-                mainTouchEndX = event.clientX;
-                mainImage.style.cursor = 'grab';
-                handleMainSwipe();
-            }
-        });
-        mainImageContainer.addEventListener('mousemove', (event) => {
-            if (isMainDragging) {
-                event.preventDefault();
-            }
-        });
-        /* ★★★ メイン画像用の機能はここまで ★★★ */
+        let isMainDragging = false; let isMainDraggingJustFinished = false; let mainTouchStartX = 0; let mainTouchEndX = 0;
+        function handleMainSwipe() { const swipeDistance = mainTouchEndX - mainTouchStartX; if (swipeDistance < -swipeThreshold) { changeMainImage(1); } else if (swipeDistance > swipeThreshold) { changeMainImage(-1); } }
+        mainImageContainer.addEventListener('touchstart', (event) => { mainTouchStartX = event.touches[0].clientX; });
+        mainImageContainer.addEventListener('touchend', (event) => { mainTouchEndX = event.changedTouches[0].clientX; handleMainSwipe(); });
+        mainImageContainer.addEventListener('mousedown', (event) => { isMainDragging = true; mainTouchStartX = event.clientX; mainImage.style.cursor = 'grabbing'; event.preventDefault(); });
+        mainImageContainer.addEventListener('mouseup', (event) => { if (isMainDragging) { isMainDragging = false; mainTouchEndX = event.clientX; mainImage.style.cursor = 'grab'; if (Math.abs(mainTouchEndX - mainTouchStartX) > 10) { isMainDraggingJustFinished = true; setTimeout(() => { isMainDraggingJustFinished = false; }, 100); } handleMainSwipe(); } });
+        mainImageContainer.addEventListener('mouseleave', (event) => { if (isMainDragging) { isMainDragging = false; mainTouchEndX = event.clientX; mainImage.style.cursor = 'grab'; handleMainSwipe(); } });
+        mainImageContainer.addEventListener('mousemove', (event) => { if (isMainDragging) { event.preventDefault(); } });
     </script>
 </body>
 
