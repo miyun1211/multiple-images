@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>商品ページ改善サンプル</title>
+  <style>
+    /* === 基本的なスタイル === */
+    body {
+      font-family: sans-serif;
+      line-height: 1.6;
+      margin: 20px;
+    }
+
+    .product-container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .product-image {
+      max-width: 150px;
+      float: left;
+      margin-right: 20px;
+    }
+
+    .clearfix::after {
+      content: "";
+      clear: both;
+      display: table;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+
+    /* === ページ内ジャンプ用のナビゲーション === */
+    .page-nav {
+      background-color: #f8f8f8;
+      padding: 10px;
+      margin-bottom: 20px;
+    }
+
+    .page-nav a {
+      margin-right: 20px;
+      text-decoration: none;
+      color: #333;
+      font-weight: bold;
+    }
+
+    /* === タブのスタイル === */
+    .tabs {
+      overflow: hidden;
+      border-bottom: 1px solid #ccc;
+      margin-bottom: 20px;
+    }
+
+    .tab-button {
+      background-color: inherit;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      padding: 14px 16px;
+      transition: 0.3s;
+      font-size: 16px;
+    }
+
+    .tab-button:hover {
+      background-color: #f1f1f1;
+    }
+
+    .tab-button.active {
+      background-color: #e7e7e7;
+      border-bottom: 2px solid #007bff;
+    }
+
+    .tab-content {
+      display: none;
+      padding: 6px 12px;
+    }
+
+    /* === スムーズスクロール === */
+    html {
+      scroll-behavior: smooth;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="product-container">
+
+    <h1>【※バラ売り】ホフブロイ・オクトーバーフェストビア【2025】</h1>
+
+    <!-- ページ内ジャンプのリンク -->
+    <nav class="page-nav">
+      <a href="#product-info">商品情報</a>
+      <a href="#purchase-area">購入</a>
+    </nav>
+
+    <!-- 商品情報セクション -->
+    <section id="product-info" class="clearfix">
+      <img src="https://i.imgur.com/vHq0L5K.png" alt="ホフブロイ・オクトーバーフェストビア" class="product-image">
+      <div>
+        <h2>Hofbräu Oktoberfestbier 2025</h2>
+        <p>
+          世界最大のビール祭り「オクトーバーフェスト」で、座席数1万席を数える最大テントが「バイエルン州立ホフブロイ・ミュンヘン醸造所」です。そのオクトーバーフェストメインビールがついに登場！<br>爽やかな苦味とほのかな甘みが絶妙で、ゴクゴクと飲めるビールです。
+        </p>
+      </div>
+    </section>
+
+    <hr>
+
+    <!-- タブUIセクション -->
+    <section id="product-details">
+      <h3>商品詳細</h3>
+      <!-- タブのボタン部分 -->
+      <div class="tabs">
+        <button class="tab-button active" onclick="openTab(event, 'spec')">基本情報</button>
+        <button class="tab-button" onclick="openTab(event, 'related')">関連商品</button>
+      </div>
+
+      <!-- タブのコンテンツ部分 -->
+      <div id="spec" class="tab-content" style="display: block;">
+        <table>
+          <tr>
+            <th>在庫</th>
+            <td>◎</td>
+          </tr>
+          <tr>
+            <th>容量</th>
+            <td>500ml</td>
+          </tr>
+          <tr>
+            <th>1箱入数(購入単位)</th>
+            <td>1本</td>
+          </tr>
+          <tr>
+            <th>アルコール</th>
+            <td>6.3%</td>
+          </tr>
+          <tr>
+            <th>スタイル</th>
+            <td>オクトーバーフェスト</td>
+          </tr>
+          <tr>
+            <th>生産地</th>
+            <td>バイエルン州</td>
+          </tr>
+          <tr>
+            <th>JAN/EAN</th>
+            <td>4005686014163</td>
+          </tr>
+        </table>
+      </div>
+
+      <div id="related" class="tab-content">
+        <p>▼バラ売りとの同梱が可能なホフブロイ専用グラス・ジョッキもご用意しておりますので、ご覧ください！</p>
+        <ul>
+          <li>専用グラス： <a href="#">300ml</a> | <a href="#">500ml</a></li>
+          <li>専用ジョッキ： <a href="#">300ml</a> | <a href="#">500ml</a> | <a href="#">1000ml</a></li>
+        </ul>
+        <p>◎ケース売りは→<a href="#">「こちら」</a>となります。</p>
+      </div>
+    </section>
+
+    <hr>
+
+    <!-- 購入セクション -->
+    <section id="purchase-area">
+      <h2>購入</h2>
+      <p><b>販売価格： ¥680 (税込) / 本</b></p>
+      <label for="quantity">数量：</label>
+      <select id="quantity" name="quantity">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+      </select>
+      <button style="padding: 10px 20px; background-color: #ffc107; border: none; cursor: pointer;">買い物かごへ</button>
+    </section>
+
+  </div>
+
+  <script>
+    // タブ切り替え用のJavaScript
+    function openTab(evt, tabName) {
+      var i, tabcontent, tablinks;
+      tabcontent = document.getElementsByClassName("tab-content");
+      for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+      }
+      tablinks = document.getElementsByClassName("tab-button");
+      for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+      }
+      document.getElementById(tabName).style.display = "block";
+      evt.currentTarget.className += " active";
+    }
+
+    // ページ読み込み時に最初のタブをアクティブにする
+    document.addEventListener("DOMContentLoaded", function () {
+      document.querySelector('.tab-button').click();
+    });
+  </script>
+
+</body>
+
+</html>
