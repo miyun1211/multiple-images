@@ -182,6 +182,21 @@
             cursor: grab;
         }
 
+        .modal-description {
+            position: absolute;
+            bottom: 140px;
+            /* ページネーション(100px)の少し上 */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            /* 横幅が広がりすぎないように制限 */
+            max-width: 600px;
+            color: #fff;
+            text-align: center;
+            font-size: clamp(14px, 1.5vw, 16px);
+            line-height: 1.5;
+        }
+
         .modal-close-button {
             position: absolute;
             top: 20px;
@@ -275,6 +290,9 @@
     <div id="modal" class="modal-overlay">
         <span id="closeButton" class="modal-close-button">&times;</span>
         <img id="modalImage" class="modal-content" src="" alt="拡大画像">
+
+        <p id="modalDescription" class="modal-description"></p>
+
         <div id="modalArrowLeft" class="modal-arrow left">&#10094;</div>
         <div id="modalArrowRight" class="modal-arrow right">&#10095;</div>
         <div id="modalPagination" class="modal-pagination"></div>
@@ -283,11 +301,11 @@
     <script>
         // ★ 変更点: 画像パスと説明文をオブジェクトで管理する
         const imageSources = [
-            { src: 'images/1.png', description: '１番目の画像の説明です。' },
-            { src: 'images/2.png', description: 'これが２番目の画像です。' },
-            { src: 'images/3.png', description: '３番目の画像についての文章。' },
-            { src: 'images/4.png', description: '４番目の画像です。' },
-            { src: 'images/5.png', description: '最後の５番目の画像になります。' }
+            { src: 'images/bier1.png', description: '１番目の画像の説明です。' },
+            { src: 'images/bier1_glass.png', description: 'これが２番目の画像です。' },
+            { src: 'images/bier1_bbq.png', description: '３番目の画像についての文章。' },
+            { src: 'images/bier1_bbq2.png', description: '４番目の画像です。' },
+            { src: 'images/bier1_food.png', description: '最後の５番目の画像になります。' }
         ];
         let currentIndex = 0;
 
@@ -345,6 +363,7 @@
         const modalArrowLeft = document.getElementById('modalArrowLeft');
         const modalArrowRight = document.getElementById('modalArrowRight');
         const modalPagination = document.getElementById('modalPagination');
+        const modalDescription = document.getElementById('modalDescription');
 
         imageSources.forEach((item, index) => {
             const dot = document.createElement('span');
@@ -357,6 +376,7 @@
 
         function updateModalView() {
             modalImage.src = imageSources[currentIndex].src;
+            modalDescription.textContent = imageSources[currentIndex].description;
             paginationDots.forEach((dot, index) => {
                 dot.classList.toggle('active', index === currentIndex);
             });
