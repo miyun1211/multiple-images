@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ビールレビュー投稿</title>
+    <style>
+        :root {
+            --amber: #fda90d;
+            --dark: #332211;
+            --gray: #e4e1e1;
+            --slider-track-height: 12px;
+            --slider-thumb-size: 26px;
+            /* 少し大きくして掴みやすく */
+            --slider-left: #a0d8ef;
+            --slider-right: #f0b2d0;
+        }
+
+        body {
+            font-family: sans-serif;
+            color: var(--dark);
+            background: var(--gray);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin: auto;
+        }
+
+        h2 {
+            text-align: center;
+            color: var(--amber);
+        }
+
+        /* 商品情報トグル */
+        .product-info-toggle {
+            cursor: pointer;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+            border: 1px solid #eee;
+            /* 枠線を追加するとよりボタンらしくなります */
+        }
+
+        /* 通常時（閉じている時）は「＋」を表示 */
+        .product-info-toggle::after {
+            content: '＋';
+            font-size: 1.2em;
+            font-weight: bold;
+            transition: transform 0.3s;
+        }
+
+        /* activeクラスがついた時（開いている時）は「ー」を表示 */
+        .product-info-toggle.active::after {
+            content: 'ー';
+            transform: none;
+            /* 回転は不要なので解除 */
+        }
+
+        .product-info-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background-color: #fff;
+            border: 1px solid #eee;
+            border-top: none;
+            border-radius: 0 0 5px 5px;
+            margin-top: -10px;
+            margin-bottom: 20px;
+        }
+
+        .product-info-inner {
+            padding: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .product-image {
+            width: 80px;
+            height: 80px;
+            background-color: #ddd;
+            border-radius: 5px;
+            margin-right: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #999;
+            font-size: 0.8em;
+        }
+
+        .product-details h3 {
+            margin: 0 0 5px 0;
+            font-size: 1.1rem;
+        }
+
+        .product-details p {
+            margin: 0;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .section {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        /* 星評価 */
+        .star-rating {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+            font-size: 2rem;
+            cursor: pointer;
+        }
+
+        .star-rating input {
+            display: none;
+        }
+
+        .star-rating label {
+            color: #ccc;
+            transition: color 0.2s;
+            margin: 0 5px;
+        }
+
+        .star-rating input:checked~label,
+        .star-rating label:hover,
+        .star-rating label:hover~label {
+            color: var(--amber);
+        }
+
+        .range-group {
+            margin: 20px 0;
+        }
+
+        /* CSS:スライダー */
+        /* 数値バッジのデザイン */
+        .current-value {
+            background: var(--amber);
+            /* つまみと同じ色 */
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            min-width: 35px;
+            text-align: center;
+        }
+
+        /* 項目名と数値を左右に振り分ける */
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: -5px;
+            font-weight: bold;
+        }
+
+        /* 数値ラベルの枠線デザイン */
+        .current-value-label {
+            font-size: 0.85rem;
+            color: var(--amber);
+            /* 文字色をアンバーに */
+            width: 45px;
+            /* 枠の幅 */
+            height: 24px;
+            /* 枠の高さ */
+            line-height: 22px;
+            /* 文字を垂直中央に */
+            text-align: center;
+            /* 文字を水平中央に */
+            border: 1.5px solid var(--amber);
+            /* ここで枠線を追加 */
+            border-radius: 4px;
+            /* 角を少し丸く（不要なら0に） */
+            display: inline-block;
+            font-weight: bold;
+        }
+
+        /* #val-aroma-left {
+            text-align: left; #左の数値は左寄せ
+        }
+
+        #val-aroma-right {
+            text-align: right; #右の数値は右寄せ
+        } */
+
+
+        /* CSS：ボタン */
+        .rating-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+        }
+
+        .rating-buttons input {
+            display: none;
+            /* ラジオボタン本体は隠す */
+        }
+
+        .rating-buttons label {
+            flex: 1;
+            text-align: center;
+            padding: 10px 0;
+            margin: 0 4px;
+            background: #eee;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+            color: #666;
+        }
+
+        /* 選択されたボタンの色（左側は水色っぽく、右側はピンクっぽくするのもアリです） */
+        .rating-buttons input:checked+label {
+            background: var(--amber);
+            color: white;
+            transform: scale(1.05);
+        }
+
+
+        .range-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: -8px;
+        }
+
+        /* --- スライダーのスムーズ化 --- */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: var(--slider-track-height);
+            background: #eee;
+            border-radius: calc(var(--slider-track-height) / 2);
+            outline: none;
+            cursor: pointer;
+            margin: 10px 0;
+            /* 背景の分割設定をクリア */
+            background-image: none;
+        }
+
+        /* つまみ (Chrome/Safari) */
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: var(--slider-thumb-size);
+            height: var(--slider-thumb-size);
+            background: var(--amber);
+            border: 3px solid #fff;
+            border-radius: 50%;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+            transition: transform 0.1s;
+            margin-top: -7px;
+            /* トラックの中央に配置 */
+        }
+
+        /* つまみ (Firefox) */
+        input[type="range"]::-moz-range-thumb {
+            width: var(--slider-thumb-size);
+            height: var(--slider-thumb-size);
+            background: var(--amber);
+            border: 3px solid #fff;
+            border-radius: 50%;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+            transition: transform 0.1s;
+        }
+
+        input[type="range"]:active::-webkit-slider-thumb {
+            transform: scale(1.15);
+        }
+
+        input[type="text"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        .submit-btn {
+            background: var(--amber);
+            color: var(--dark);
+            border: none;
+            padding: 15px;
+            width: 100%;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .submit-btn:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h2>レビューを投稿する</h2>
+
+        <div class="product-info-toggle" onclick="toggleProductInfo()">
+            購入した商品情報
+        </div>
+        <div class="product-info-content" id="productInfoContent">
+            <div class="product-info-inner">
+                <div class="product-image">画像</div>
+                <div class="product-details">
+                    <h3>銀河高原ビール 小麦のビール</h3>
+                    <p>スタイル: ヘーフェヴァイツェン</p>
+                    <p>購入日: 2023年10月27日</p>
+                </div>
+            </div>
+        </div>
+
+        <form id="reviewForm">
+            <div class="section">
+                <label>全体評価</label>
+                <div class="star-rating">
+                    <input type="radio" id="star5" name="rating" value="5"><label for="star5">★</label>
+                    <input type="radio" id="star4" name="rating" value="4"><label for="star4">★</label>
+                    <input type="radio" id="star3" name="rating" value="3"><label for="star3">★</label>
+                    <input type="radio" id="star2" name="rating" value="2"><label for="star2">★</label>
+                    <input type="radio" id="star1" name="rating" value="1"><label for="star1">★</label>
+                </div>
+            </div>
+
+            <div class="section">
+                <label>あなたの属性</label>
+                <select name="user_type">
+                    <option value="beginner">初心者（これから学びたい）</option>
+                    <option value="regular">時々飲む（ビール好き）</option>
+                    <option value="expert">マニア（ドイツビール命）</option>
+                    <option value="pro_shop">飲食店経営者</option>
+                    <option value="pro_event">イベント企画者</option>
+                </select>
+            </div>
+
+            <div class="section">
+                <label>1. 味わいの構成要素</label>
+                <div class="range-group">
+                    <div class="slider-header">
+                        <span>香りの強さ</span>
+                        <span class="current-value-label" id="val-aroma-level">3</span>
+                    </div>
+                    <div class="rating-buttons">
+                        <input type="radio" name="aroma" value="1" id="aroma1"><label for="aroma1">1</label>
+                        <input type="radio" name="aroma" value="2" id="aroma2"><label for="aroma2">2</label>
+                        <input type="radio" name="aroma" value="3" id="aroma3" checked><label for="aroma3">3</label>
+                        <input type="radio" name="aroma" value="4" id="aroma4"><label for="aroma4">4</label>
+                        <input type="radio" name="aroma" value="5" id="aroma5"><label for="aroma5">5</label>
+                    </div>
+                    <div class="range-labels"><span>穏やか</span><span>華やか</span></div>
+                </div>
+
+                <div class="range-group">
+                    <div class="slider-header">
+                        <span>苦味の強さ</span>
+                        <span class="current-value-label" id="val-bitter-level">3</span>
+                    </div>
+                    <div class="rating-buttons">
+                        <input type="radio" name="bitter" value="1" id="bitter1"><label for="bitter1">1</label>
+                        <input type="radio" name="bitter" value="2" id="bitter2"><label for="bitter2">2</label>
+                        <input type="radio" name="bitter" value="3" id="bitter3" checked><label for="bitter3">3</label>
+                        <input type="radio" name="bitter" value="4" id="bitter4"><label for="bitter4">4</label>
+                        <input type="radio" name="bitter" value="5" id="bitter5"><label for="bitter5">5</label>
+                    </div>
+                    <div class="range-labels"><span>弱い</span><span>強い</span></div>
+                </div>
+
+                <div class="range-group">
+                    <div class="slider-header">
+                        <span>コク・麦芽感</span>
+                        <span class="current-value-label" id="val-sweet_malt-level">3</span>
+                    </div>
+                    <div class="rating-buttons">
+                        <input type="radio" name="sweet_malt" value="1" id="sweet1"><label for="sweet1">1</label>
+                        <input type="radio" name="sweet_malt" value="2" id="sweet2"><label for="sweet2">2</label>
+                        <input type="radio" name="sweet_malt" value="3" id="sweet3" checked><label
+                            for="sweet3">3</label>
+                        <input type="radio" name="sweet_malt" value="4" id="sweet4"><label for="sweet4">4</label>
+                        <input type="radio" name="sweet_malt" value="5" id="sweet5"><label for="sweet5">5</label>
+                    </div>
+                    <div class="range-labels"><span>すっきり</span><span>濃厚</span></div>
+                </div>
+
+                <div class="range-group">
+                    <div class="slider-header">
+                        <span>ボディ（コク）</span>
+                        <span class="current-value-label" id="val-body-level">3</span>
+                    </div>
+                    <div class="rating-buttons">
+                        <input type="radio" name="body" value="1" id="body1"><label for="body1">1</label>
+                        <input type="radio" name="body" value="2" id="body2"><label for="body2">2</label>
+                        <input type="radio" name="body" value="3" id="body3" checked><label for="body3">3</label>
+                        <input type="radio" name="body" value="4" id="body4"><label for="body4">4</label>
+                        <input type="radio" name="body" value="5" id="body5"><label for="body5">5</label>
+                    </div>
+                    <div class="range-labels"><span>ライト</span><span>重厚</span></div>
+                </div>
+            </div>
+
+            <div class="section">
+                <label>2. 飲み心地・体験</label>
+                <div class="range-group">
+                    <div class="slider-header">
+                        <span>飲みやすさ</span>
+                        <span class="current-value-label" id="val-drinkability-level">3</span>
+                    </div>
+                    <div class="rating-buttons">
+                        <input type="radio" name="drinkability" value="1" id="drink1"><label for="drink1">1</label>
+                        <input type="radio" name="drinkability" value="2" id="drink2"><label for="drink2">2</label>
+                        <input type="radio" name="drinkability" value="3" id="drink3" checked><label
+                            for="drink3">3</label>
+                        <input type="radio" name="drinkability" value="4" id="drink4"><label for="drink4">4</label>
+                        <input type="radio" name="drinkability" value="5" id="drink5"><label for="drink5">5</label>
+                    </div>
+                    <div class="range-labels"><span>玄人向け</span><span>初心者向け</span></div>
+                </div>
+
+                <div class="range-group">
+                    <div class="slider-header">
+                        <span>コストパフォーマンス</span>
+                        <span class="current-value-label" id="val-cost_performance-level">3</span>
+                    </div>
+                    <div class="rating-buttons">
+                        <input type="radio" name="cost_performance" value="1" id="cost1"><label for="cost1">1</label>
+                        <input type="radio" name="cost_performance" value="2" id="cost2"><label for="cost2">2</label>
+                        <input type="radio" name="cost_performance" value="3" id="cost3" checked><label
+                            for="cost3">3</label>
+                        <input type="radio" name="cost_performance" value="4" id="cost4"><label for="cost4">4</label>
+                        <input type="radio" name="cost_performance" value="5" id="cost5"><label for="cost5">5</label>
+                    </div>
+                    <div class="range-labels"><span>割高</span><span>お値段以上</span></div>
+                </div>
+            </div>
+
+
+
+            <!-- スライダーのとき -->
+            <!-- <div class="range-group">
+                    <div class="slider-header">
+                        <span class="current-value-label" id="val-bitter-left">50%</span>
+                        <span>苦味</span>
+                        <span class="current-value-label" id="val-bitter-right">50%</span>
+                    </div>
+                    <input type="range" name="bitter" min="1" max="5" step="0.1" value="3" class="dynamic-slider"
+                        data-target="val-bitter">
+                    <div class="range-labels"><span>弱い</span><span>強い</span></div>
+                </div>
+
+                <div class="range-group">
+                    <div class="slider-header">
+                        <span class="current-value-label" id="val-sweet_malt-left">50%</span>
+                        <span>甘味・麦芽感</span>
+                        <span class="current-value-label" id="val-sweet_malt-right">50%</span>
+                    </div>
+                    <input type="range" name="sweet_malt" min="1" max="5" step="0.1" value="3" class="dynamic-slider"
+                        data-target="val-sweet_malt">
+                    <div class="range-labels"><span>すっきり</span><span>濃厚</span></div>
+                </div>
+
+                <div class="range-group">
+                    <div class="slider-header">
+                        <span class="current-value-label" id="val-body-left">50%</span>
+                        <span>ボディ（コク）</span>
+                        <span class="current-value-label" id="val-body-right">50%</span>
+                    </div>
+                    <input type="range" name="body" min="1" max="5" step="0.1" value="3" class="dynamic-slider"
+                        data-target="val-body">
+                    <div class="range-labels"><span>ライト</span><span>重厚</span></div>
+                </div>
+            </div>
+
+            <div class="section">
+                <label>2. 飲み心地・体験</label>
+                <div class="range-group">
+                    <div class="slider-header">
+                        <span class="current-value-label" id="val-drinkability-left">50%</span>
+                        <span>飲みやすさ</span>
+                        <span class="current-value-label" id="val-drinkability-right">50%</span>
+                    </div>
+                    <input type="range" name="drinkability" min="1" max="5" step="0.1" value="3" class="dynamic-slider"
+                        data-target="val-drinkability">
+                    <div class="range-labels"><span>玄人向け</span><span>初心者OK</span></div>
+                </div>
+
+                <div class="range-group">
+                    <div class="slider-header">
+                        <span class="current-value-label" id="val-cost_performance-left">50%</span>
+                        <span>コスパ</span>
+                        <span class="current-value-label" id="val-cost_performance-right">50%</span>
+                    </div>
+                    <input type="range" name="cost_performance" min="1" max="5" step="0.1" value="3"
+                        class="dynamic-slider" data-target="val-cost_performance">
+                    <div class="range-labels"><span>割高</span><span>お値段以上</span></div>
+                </div>
+            </div> -->
+
+            <div class="section">
+                <label>タイトル</label>
+                <input type="text" name="title" placeholder="最高でした！など">
+                <br><br>
+                <label>本文</label>
+                <textarea name="comment" rows="4" placeholder="味の感想を教えてください"></textarea>
+            </div>
+
+            <button type="submit" class="submit-btn">この内容で投稿する</button>
+        </form>
+    </div>
+
+    <script>
+        // 商品情報
+        function toggleProductInfo() {
+            const toggle = document.querySelector('.product-info-toggle');
+            const content = document.getElementById('productInfoContent');
+
+            // activeクラスをつけ外しすることで、CSS側の「＋/ー」が切り替わります
+            toggle.classList.toggle('active');
+
+            // コンテンツの開閉処理
+            if (content.style.maxHeight) {
+                content.style.maxHeight = null;
+            } else {
+                content.style.maxHeight = content.scrollHeight + "px";
+            }
+        }
+
+        // スライダー
+        function updateSliderDisplay(el) {
+            const val = parseFloat(el.value);
+            const min = parseFloat(el.min || 1);
+            const max = parseFloat(el.max || 5);
+
+            // 背景色のためのパーセント計算
+            const percent = ((val - min) / (max - min)) * 100;
+            el.style.background = `linear-gradient(to right, #a0d8ef 0%, #a0d8ef ${percent}%, #f0b2d0 ${percent}%, #f0b2d0 100%)`;
+
+            // 数値を「3.0」のような形式で表示
+            const targetId = el.getAttribute('data-target');
+            if (targetId) {
+                const levelLabel = document.getElementById(`${targetId}-level`);
+                if (levelLabel) {
+                    levelLabel.innerText = val.toFixed(1); // 小数点第1位まで表示
+                }
+            }
+        }
+
+        // 全てのラジオボタンにイベントを設定
+        document.querySelectorAll('.rating-buttons input').forEach(input => {
+            input.addEventListener('change', (e) => {
+                const name = e.target.name;
+                const val = e.target.value;
+                // 対応するラベル（例：val-aroma-level）を書き換え
+                const label = document.getElementById(`val-${name}-level`);
+                if (label) label.innerText = val;
+            });
+        });
+
+        // コメント
+        const sliders = document.querySelectorAll('.dynamic-slider');
+        sliders.forEach(slider => {
+            updateSliderDisplay(slider);
+            slider.addEventListener('input', (e) => {
+                updateSliderDisplay(e.target);
+            });
+        });
+
+        // フォームの送信イベントを制御
+        document.getElementById('reviewForm').addEventListener('submit', function (e) {
+            e.preventDefault(); // ページのリロードを防ぐ
+
+            // 1. 入力された値を取得する
+            const formData = new FormData(this);
+            const rating = formData.get('rating') || '未評価';
+            const title = formData.get('title') || '（タイトルなし）';
+            const comment = formData.get('comment') || '（コメントなし）';
+
+            // 5段階評価の各数値を取得
+            const aroma = formData.get('aroma');
+            const bitter = formData.get('bitter');
+            const sweet = formData.get('sweet_malt');
+            const body = formData.get('body');
+            const drink = formData.get('drinkability');
+            const cost = formData.get('cost_performance');
+
+            // 2. 完了画面（プレビュー付き）に書き換える
+            document.querySelector('.container').innerHTML = `
+                <div style="text-align: center; padding: 20px 0;">
+                    <div style="font-size: 3rem; margin-bottom: 10px;">✅</div>
+                    <h2 style="color: var(--amber); margin-bottom: 5px;">投稿が完了しました！</h2>
+                    <p style="color: #666; font-size: 0.9rem;">素敵なレビューをありがとうございます。</p>
+                    
+                    <div style="text-align: left; background: #f9f9f9; border-radius: 10px; padding: 20px; margin: 30px 0; border: 1px solid #eee;">
+                        <p style="font-weight: bold; color: var(--amber); margin-bottom: 15px; border-bottom: 2px solid var(--amber); display: inline-block;">投稿のプレビュー</p>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <span style="color: var(--amber); font-size: 1.2rem;">${'★'.repeat(rating)}${'☆'.repeat(5 - rating)}</span>
+                            <strong style="margin-left: 10px; font-size: 1.1rem;">${title}</strong>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.85rem; background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                            <div>香り: <strong>Lv ${aroma}</strong></div>
+                            <div>苦味: <strong>Lv ${bitter}</strong></div>
+                            <div>甘味: <strong>Lv ${sweet}</strong></div>
+                            <div>コク: <strong>Lv ${body}</strong></div>
+                            <div>飲みやすさ: <strong>Lv ${drink}</strong></div>
+                            <div>コスパ: <strong>Lv ${cost}</strong></div>
+                        </div>
+
+                        <p style="font-size: 0.95rem; line-height: 1.6; white-space: pre-wrap; color: #332211;">${comment}</p>
+                    </div>
+
+                    <button onclick="location.reload()" class="submit-btn" style="width: auto; padding: 12px 40px;">
+                        トップに戻る
+                    </button>
+                </div>
+            `;
+
+            // 画面上部へスクロールさせる
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    </script>
+</body>
+
+</html>

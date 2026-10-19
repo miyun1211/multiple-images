@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ECサイト レビュー機能（画像投稿＆スタンプ機能搭載版）</title>
+  <style>
+    /* === 🎬 元ファイルのデザインシステムを完全統合 === */
+    :root {
+      --header-bg: #4a0e0e;
+      --primary-red: #9a1e22;
+      --accent-gold: #ffc107;
+      --amber: #fda90d;
+      --dark: #332211;
+      --gray: #e4e1e1;
+      --light-bg: #fdfdfd;
+      --border-color: #eee;
+      --slider-track-height: 10px;
+      --slider-thumb-size: 24px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      background-color: var(--gray);
+      color: var(--dark);
+      padding-bottom: 6px;
+    }
+
+    /* 🚩 ECサイト風ヘッダーの再現 */
+    .site-header {
+      background-color: var(--header-bg);
+      color: white;
+      text-align: center;
+      padding: 15px;
+      font-weight: bold;
+      font-size: 1.2rem;
+      letter-spacing: 1px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    /* 🔄 フロー進行バー */
+    .flow-bar {
+      background: #fff;
+      padding: 12px;
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      border-bottom: 1px solid #ccc;
+    }
+
+    .flow-step {
+      padding: 5px 12px;
+      background: #e0e0e0;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      color: #666;
+    }
+
+    .flow-step.active {
+      background: var(--primary-red);
+      color: white;
+    }
+
+    /* 📦 メインコンテナ */
+    .container {
+      max-width: 600px;
+      margin: 25px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      box-sizing: border-box;
+    }
+
+    h2 {
+      color: var(--primary-red);
+      font-size: 1.3rem;
+      border-bottom: 2px solid var(--primary-red);
+      padding-bottom: 6px;
+      margin-top: 0;
+      margin-bottom: 20px;
+    }
+
+    /* 🛍️ ボタン類 */
+    .btn {
+      display: block;
+      width: 100%;
+      background-color: var(--primary-red);
+      color: white;
+      border: none;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 30px;
+      cursor: pointer;
+      box-shadow: 0 4px 0 #600f11;
+      text-align: center;
+      text-decoration: none;
+      box-sizing: border-box;
+      transition: none;
+      margin-top: 15px;
+    }
+
+    .btn:active {
+      transform: translateY(4px);
+      box-shadow: none;
+    }
+
+    .btn-gold {
+      background-color: var(--amber);
+      color: var(--dark);
+      box-shadow: 0 4px 0 #b87600;
+    }
+
+    /* 📱 画面の切り替え制御 */
+    .step-view {
+      display: none;
+    }
+
+    .step-view.active {
+      display: block;
+    }
+
+    /* ⭐ 星評価ラジオボタン */
+    .star-rating {
+      display: flex;
+      flex-direction: row-reverse;
+      justify-content: flex-end;
+      font-size: 2.5rem;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+
+    .star-rating input {
+      display: none;
+    }
+
+    .star-rating label {
+      color: #ccc;
+      margin: 0 4px;
+      transition: 0.1s;
+    }
+
+    .star-rating input:checked~label,
+    .star-rating label:hover,
+    .star-rating label:hover~label {
+      color: var(--amber);
+    }
+
+    /* 🎚️ スライダーUI */
+    .range-group {
+      margin-bottom: 22px;
+    }
+
+    .slider-label-row {
+      display: flex;
+      justify-content: space-between;
+      font-weight: bold;
+      font-size: 0.9rem;
+      margin-bottom: 6px;
+    }
+
+    .slider-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: var(--slider-track-height);
+      background: linear-gradient(to right, var(--slider-left, #a0d8ef), var(--slider-right, #f0b2d0));
+      border-radius: 6px;
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: var(--slider-thumb-size);
+      height: var(--slider-thumb-size);
+      background: white;
+      border: 3px solid var(--amber);
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    input[type="text"],
+    input[type="email"],
+    textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-sizing: border-box;
+      margin-top: 6px;
+      font-size: 0.95rem;
+    }
+
+    /* 📁 画像アップロード枠のデザイン */
+    .file-upload-wrapper {
+      border: 2px dashed #ccc;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      background: #fafafa;
+      cursor: pointer;
+      position: relative;
+      margin-top: 6px;
+    }
+
+    .file-upload-wrapper:hover {
+      background: #f0f0f0;
+      border-color: var(--amber);
+    }
+
+    .file-upload-wrapper input[type="file"] {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .preview-img-box {
+      margin-top: 10px;
+      display: none;
+      text-align: center;
+    }
+
+    .preview-img-box img {
+      max-width: 100%;
+      max-height: 150px;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+    }
+
+    /* 📊 総合評価エリア */
+    .rating-summary-box {
+      background: #fff8eb;
+      border: 1px solid #ffe8cc;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 30px;
+    }
+
+    .big-num {
+      font-size: 3.8rem;
+      font-weight: bold;
+      color: var(--amber);
+      line-height: 1;
+    }
+
+    /* 分布グラフ（横棒） */
+    .dist-table {
+      width: 100%;
+      margin-bottom: 25px;
+    }
+
+    .dist-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 0.85rem;
+    }
+
+    .dist-label {
+      width: 40px;
+      font-weight: bold;
+    }
+
+    .dist-bar-track {
+      flex: 1;
+      background: #eee;
+      height: 12px;
+      border-radius: 6px;
+      margin: 0 12px;
+      overflow: hidden;
+    }
+
+    .dist-bar-fill {
+      background: var(--amber);
+      height: 100%;
+      width: 0%;
+      transition: width 0.4s ease-out;
+    }
+
+    .dist-count {
+      width: 45px;
+      text-align: right;
+      color: #666;
+    }
+
+    /* 👅 味の評価メーター */
+    .radar-container {
+      background: #fdfbf7;
+      border: 1px solid #ebdcc5;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 25px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px 25px;
+    }
+
+    .radar-row {
+      display: flex;
+      flex-direction: column;
+      font-size: 0.85rem;
+    }
+
+    .radar-label-row {
+      display: flex;
+      justify-content: space-between;
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+
+    .radar-bar-track {
+      background: #e8e4dc;
+      height: 10px;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    .radar-bar-fill {
+      background: #6c8c5c;
+      height: 100%;
+      width: 0%;
+      transition: width 0.5s ease-out;
+    }
+
+    .radar-val {
+      color: #4a633c;
+      font-weight: bold;
+    }
+
+    /* 💬 口コミカード */
+    .review-item {
+      background: #f9f6f0;
+      border: 1px solid #eaddca;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .review-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      color: #555;
+    }
+
+    .badge {
+      background: #7a6248;
+      color: white;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      margin-left: 6px;
+    }
+
+    .review-taste-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px 15px;
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 12px 0;
+      font-size: 0.85rem;
+      border: 1px solid #e4e1e1;
+    }
+
+    /* 口コミ内の画像表示 */
+    .review-attached-img {
+      margin: 12px 0;
+      text-align: left;
+    }
+
+    .review-attached-img img {
+      max-width: 100%;
+      max-height: 200px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    }
+
+    /* 👍 スタンプボタンエリア */
+    .stamp-area {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+      border-top: 1px dashed #eaddca;
+      padding-top: 12px;
+    }
+
+    .stamp-btn {
+      background: white;
+      border: 1px solid #cbd5e1;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-weight: bold;
+      color: #475569;
+      transition: all 0.2s;
+    }
+
+    .stamp-btn:hover {
+      background: #f8fafc;
+      border-color: var(--amber);
+      color: var(--dark);
+    }
+
+    .stamp-btn.active {
+      background: #fef3c7;
+      border-color: var(--amber);
+      color: #b45309;
+    }
+
+    #ai-alert {
+      display: none;
+      background: #fce8e6;
+      color: #c5221f;
+      border: 1px solid #fad2cf;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+
+    .email-box {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-top: 5px solid var(--primary-red);
+      border-radius: 6px;
+      padding: 20px;
+      margin: 20px 0;
+      font-size: 0.9rem;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="site-header">MY BEER MARKET</div>
+
+  <div class="flow-bar">
+    <div class="flow-step active" id="stepIndicator1">1. 購入手続き</div>
+    <div class="flow-step" id="stepIndicator2">2. メールで催促</div>
+    <div class="flow-step" id="stepIndicator3">3. レビュー記載</div>
+    <div class="flow-step" id="stepIndicator4">4. 商品ページ反映</div>
+  </div>
+
+  <div class="container step-view active" id="view1">
+    <h2>お客様情報・配送先の入力</h2>
+    <div
+      style="display:flex; gap:20px; margin:20px 0; background:#fdfbf7; padding:15px; border-radius:10px; border:1px solid #eddcc5;">
+      <div style="font-size:3rem; line-height: 1.1;">🍺</div>
+      <div>
+        <h3 style="margin:0; font-size:1.05rem; color:var(--dark);">ホフブロイ・オクトーバーフェストビア 500ml</h3>
+        <p style="margin:5px 0 0 0; color:var(--primary-red); font-weight:bold; font-size:1.1rem;">¥680 (税込) <span
+            style="font-size:0.8rem; color:#666; font-weight:normal;">/ 数量: 1</span></p>
+      </div>
+    </div>
+
+    <div style="margin-bottom: 18px;">
+      <label style="font-weight:bold; font-size:0.9rem;">お名前（ニックネーム）</label>
+      <input type="text" id="purchase-name" required value="鈴木さん">
+    </div>
+    <div style="margin-bottom: 25px;">
+      <label style="font-weight:bold; font-size:0.9rem;">メールアドレス <span
+          style="font-size:0.75rem; color:var(--primary-red); font-weight:normal;">(IDとして紐付きます)</span></label>
+      <input type="email" id="purchase-email" required value="suzuki@example.com">
+    </div>
+
+    <button class="btn" onclick="executePurchase()">注文を確定する</button>
+  </div>
+
+  <div class="container step-view" id="view2">
+    <h2 style="text-align:center; border:none; margin-bottom:0;">📥 レビュー催促メールの自動送信</h2>
+    <p style="font-size:0.85rem; color:#666; text-align:center; margin-top:5px;">（商品お届けから数日後に自動送信されるメールの再現です）</p>
+
+    <div class="email-box">
+      <div
+        style="border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; color: #555; font-size: 0.85rem; line-height: 1.7;">
+        <strong>件名:</strong> 【マイビールマーケット】生ビールのお味はいかがでしたか？（100円OFFクーポン進呈）<br>
+        <strong>宛先:</strong> <span id="email-to-display" style="color:#0066cc;"></span>
+      </div>
+      <p><strong><span id="email-name-display"></span> 様</strong></p>
+      <p>先日は当店にて「ホフブロイ・オクトーバーフェストビア」をご購入いただき、誠にありがとうございました！</p>
+      <p>当店では、お客様により美味しいビールをお届けするため、飲んだご感想を大募集しております。今なら一言レビューを書いていただくだけで、次回使える**100円OFFクーポン**を自動で進呈いたします！</p>
+
+      <button class="btn btn-gold" onclick="goToStep(3)">✨ クーポンをもらってレビューを書く</button>
+    </div>
+  </div>
+
+  <div class="container step-view" id="view3">
+    <h2>商品レビューの投稿</h2>
+    <div
+      style="background:#eaf2f8; padding:10px 15px; border-radius:8px; margin-bottom:20px; font-size:0.85rem; color:#2471a3; font-weight:bold;">
+      👤 認証中の購入者：<span id="review-name-display"></span> アドレス：[<span id="review-id-display"></span>]
+    </div>
+
+    <form id="reviewForm" onsubmit="submitReview(event)">
+      <div style="margin-bottom: 20px;">
+        <label style="font-weight:bold; display:block; margin-bottom:5px;">全体評価（満足度）</label>
+        <div class="star-rating">
+          <input type="radio" id="star5" name="rating" value="5" required><label for="star5">★</label>
+          <input type="radio" id="star4" name="rating" value="4"><label for="star4">★</label>
+          <input type="radio" id="star3" name="rating" value="3"><label for="star3">★</label>
+          <input type="radio" id="star2" name="rating" value="2"><label for="star2">★</label>
+          <input type="radio" id="star1" name="rating" value="1"><label for="star1">★</label>
+        </div>
+      </div>
+
+      <div style="background:#fdfdfd; border:1px solid #ddd; padding:20px; border-radius:12px; margin-bottom:20px;">
+        <span
+          style="font-weight:bold; font-size:0.95rem; display:block; border-bottom:1px solid #eee; padding-bottom:8px; margin-bottom:18px; color:var(--dark);">🍻
+          味覚インプレッション（5段階スライダー）</span>
+
+        <div class="range-group">
+          <div class="slider-label-row"><span>香り</span>
+            <div>Lv <span id="lbl-aroma" style="color:var(--amber); font-weight:bold;">3</span></div>
+          </div>
+          <div class="slider-container"><input type="range" name="aroma" min="1" max="5" value="3"
+              oninput="document.getElementById('lbl-aroma').innerText=this.value"></div>
+        </div>
+        <div class="range-group">
+          <div class="slider-label-row"><span>苦味</span>
+            <div>Lv <span id="lbl-bitter" style="color:var(--amber); font-weight:bold;">3</span></div>
+          </div>
+          <div class="slider-container"><input type="range" name="bitter" min="1" max="5" value="3"
+              oninput="document.getElementById('lbl-bitter').innerText=this.value"></div>
+        </div>
+        <div class="range-group">
+          <div class="slider-label-row"><span>甘味</span>
+            <div>Lv <span id="lbl-sweet" style="color:var(--amber); font-weight:bold;">3</span></div>
+          </div>
+          <div class="slider-container"><input type="range" name="sweet" min="1" max="5" value="3"
+              oninput="document.getElementById('lbl-sweet').innerText=this.value"></div>
+        </div>
+        <div class="range-group">
+          <div class="slider-label-row"><span>コク</span>
+            <div>Lv <span id="lbl-body" style="color:var(--amber); font-weight:bold;">3</span></div>
+          </div>
+          <div class="slider-container"><input type="range" name="body" min="1" max="5" value="3"
+              oninput="document.getElementById('lbl-body').innerText=this.value"></div>
+        </div>
+        <div class="range-group">
+          <div class="slider-label-row"><span>飲みやすさ</span>
+            <div>Lv <span id="lbl-drink" style="color:var(--amber); font-weight:bold;">3</span></div>
+          </div>
+          <div class="slider-container"><input type="range" name="drink" min="1" max="5" value="3"
+              oninput="document.getElementById('lbl-drink').innerText=this.value"></div>
+        </div>
+        <div class="range-group">
+          <div class="slider-label-row"><span>コスパ</span>
+            <div>Lv <span id="lbl-cost" style="color:var(--amber); font-weight:bold;">3</span></div>
+          </div>
+          <div class="slider-container"><input type="range" name="cost" min="1" max="5" value="3"
+              oninput="document.getElementById('lbl-cost').innerText=this.value"></div>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <label style="font-weight:bold; display:block;">商品画像の添付 <span
+            style="font-size:0.8rem; color:#666; font-weight:normal;">(任意)</span></label>
+        <div class="file-upload-wrapper">
+          <span id="upload-placeholder">📸 クリックまたはドラッグで画像をアップロード</span>
+          <input type="file" id="form-image" accept="image/*" onchange="previewAttachedImage(this)">
+        </div>
+        <div class="preview-img-box" id="form-img-preview-box">
+          <img src="" id="form-img-preview-tag" alt="プレビュー">
+          <p style="margin:3px 0 0 0; font-size:0.75rem; color:#c5221f; cursor:pointer; font-weight:bold;"
+            onclick="clearAttachedImage()">✕ 画像を消去する</p>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 18px;">
+        <label style="font-weight:bold;">評価タイトル</label>
+        <input type="text" id="form-title" required placeholder="例：家飲みのクオリティが爆上がり！">
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <label style="font-weight:bold;">本文コメント</label>
+        <textarea id="form-comment" rows="4" required placeholder="ビールの具体的な感想を入力してください。"></textarea>
+      </div>
+
+      <button type="submit" class="btn">レビューを送信して、商品ページに反映する ➔</button>
+    </form>
+  </div>
+
+  <div class="container step-view" id="view4">
+    <div id="ai-alert"></div>
+
+    <h1 style="font-size:1.5rem; margin-top:0; margin-bottom:5px; color:var(--dark);">ホフブロイ・オクトーバーフェストビア 500ml</h1>
+    <p style="margin:0 0 20px 0; color:#666; font-size:0.9rem;">ドイツビールの祭典「オクトーバーフェスト」のために造られる奇跡のメルツェン元祖生ビール。</p>
+
+    <div class="rating-summary-box">
+      <div class="big-num" id="ui-avg-num">0.0</div>
+      <div>
+        <div style="color:var(--amber); font-size:1.7rem; line-height:1;" id="ui-avg-stars">☆☆☆☆☆</div>
+        <div style="font-size:0.85rem; color:#666; margin-top:6px; font-weight:bold;" id="ui-total-count">総合評価</div>
+      </div>
+    </div>
+
+    <h3
+      style="font-size:1rem; border-left:4px solid var(--amber); padding-left:10px; margin-bottom:12px; color:var(--dark);">
+      📊 評価分布</h3>
+    <div class="dist-table">
+      <div class="dist-row">
+        <div class="dist-label">星5</div>
+        <div class="dist-bar-track">
+          <div class="dist-bar-fill" id="bar5"></div>
+        </div>
+        <div class="dist-count" id="cnt5">0</div>
+      </div>
+      <div class="dist-row">
+        <div class="dist-label">星4</div>
+        <div class="dist-bar-track">
+          <div class="dist-bar-fill" id="bar4"></div>
+        </div>
+        <div class="dist-count" id="cnt4">0</div>
+      </div>
+      <div class="dist-row">
+        <div class="dist-label">星3</div>
+        <div class="dist-bar-track">
+          <div class="dist-bar-fill" id="bar3"></div>
+        </div>
+        <div class="dist-count" id="cnt3">0</div>
+      </div>
+      <div class="dist-row">
+        <div class="dist-label">星2</div>
+        <div class="dist-bar-track">
+          <div class="dist-bar-fill" id="bar2"></div>
+        </div>
+        <div class="dist-count" id="cnt2">0</div>
+      </div>
+      <div class="dist-row">
+        <div class="dist-label">星1</div>
+        <div class="dist-bar-track">
+          <div class="dist-bar-fill" id="bar1"></div>
+        </div>
+        <div class="dist-count" id="cnt1">0</div>
+      </div>
+    </div>
+
+    <h3
+      style="font-size:1rem; border-left:4px solid #6c8c5c; padding-left:10px; margin-bottom:12px; color:var(--dark);">
+      👅 購入者の平均味覚メーター（6項目）</h3>
+    <div class="radar-container">
+      <div class="radar-row">
+        <div class="radar-label-row"><span>香り</span><span class="radar-val" id="val-aroma">0.0</span></div>
+        <div class="radar-bar-track">
+          <div class="radar-bar-fill" id="r-aroma"></div>
+        </div>
+      </div>
+      <div class="radar-row">
+        <div class="radar-label-row"><span>苦味</span><span class="radar-val" id="val-bitter">0.0</span></div>
+        <div class="radar-bar-track">
+          <div class="radar-bar-fill" id="r-bitter"></div>
+        </div>
+      </div>
+      <div class="radar-row">
+        <div class="radar-label-row"><span>甘味</span><span class="radar-val" id="val-sweet">0.0</span></div>
+        <div class="radar-bar-track">
+          <div class="radar-bar-fill" id="r-sweet"></div>
+        </div>
+      </div>
+      <div class="radar-row">
+        <div class="radar-label-row"><span>コク</span><span class="radar-val" id="val-body">0.0</span></div>
+        <div class="radar-bar-track">
+          <div class="radar-bar-fill" id="r-body"></div>
+        </div>
+      </div>
+      <div class="radar-row">
+        <div class="radar-label-row"><span>飲みやすさ</span><span class="radar-val" id="val-drink">0.0</span></div>
+        <div class="radar-bar-track">
+          <div class="radar-bar-fill" id="r-drink"></div>
+        </div>
+      </div>
+      <div class="radar-row">
+        <div class="radar-label-row"><span>コスパ</span><span class="radar-val" id="val-cost">0.0</span></div>
+        <div class="radar-bar-track">
+          <div class="radar-bar-fill" id="r-cost"></div>
+        </div>
+      </div>
+    </div>
+
+    <h3
+      style="font-size:1.05rem; border-bottom:2px solid #ccc; padding-bottom:6px; margin-top:30px; color:var(--dark);">
+      💬 カスタマーレビュー一覧</h3>
+    <div id="reviews-list-area"></div>
+
+    <hr style="margin-top: 40px; border: 0; border-top: 1px dashed #ccc;">
+    <button class="btn btn-gold" onclick="backToPurchase()">🔄 別のメールアドレス（別人）で購入・投稿テストをする</button>
+    <button class="btn" onclick="resetDemo()"
+      style="width:100%; background:#777; color:white; box-shadow:0 4px 0 #555;">🗑️ データを全消去して完全リセットする</button>
+  </div>
+
+  <script>
+    // 先輩たちのデータ。スタンプ用のカウント(stamps)オブジェクトを配備
+    const initialData = [
+      { id: "master@example.com", name: "ビアマスター", rating: 5, aroma: 5, bitter: 3, sweet: 2, body: 4, drink: 4, cost: 3, title: "これぞ本物のフェストビア！", comment: "麦芽のジューシーな甘みと、ノーブルホップの華やかな香りのバランスが完璧。何杯でも飽きずに飲めます！", status: "公開", image: "", stamps: { useful: 12, tasty: 8 } },
+      { id: "takunomi@example.com", name: "宅飲み愛好家", rating: 4, aroma: 4, bitter: 2, sweet: 4, body: 3, drink: 5, cost: 4, title: "フルーティで非常に飲みやすい", comment: "日本のピルスナービールより苦味がツンと来なくて、非常にまろやか。フェスト期間以外も常時買いたいです。", status: "公開", image: "", stamps: { useful: 5, tasty: 14 } },
+      { id: "karakuchi@example.com", name: "辛口太郎", rating: 3, aroma: 2, bitter: 4, sweet: 1, body: 4, drink: 3, cost: 5, title: "ちょっとコクが重めかな", comment: "ドイツビールらしいどっしりとしたコクと苦味。個人的にはもう少しキレがあってスッキリしている方が好みでした。", status: "公開", image: "", stamps: { useful: 3, tasty: 1 } }
+    ];
+
+    let dbReviews = [];
+    let currentPurchase = { name: "", email: "" };
+    let attachedImageBase64 = ""; // アップロードされた画像を一時保管する変数
+
+    window.onload = function () {
+      loadDatabase();
+    };
+
+    function loadDatabase() {
+      const savedData = localStorage.getItem('ec_demo_advanced_reviews');
+      if (savedData) {
+        dbReviews = JSON.parse(savedData);
+      } else {
+        dbReviews = [...initialData];
+        localStorage.setItem('ec_demo_advanced_reviews', JSON.stringify(dbReviews));
+      }
+    }
+
+    function goToStep(stepNum) {
+      document.querySelectorAll('.step-view').forEach(v => v.classList.remove('active'));
+      document.querySelectorAll('.flow-step').forEach(s => s.classList.remove('active'));
+
+      document.getElementById(`view${stepNum}`).classList.add('active');
+      document.getElementById(`stepIndicator${stepNum}`).classList.add('active');
+      window.scrollTo(0, 0);
+
+      if (stepNum === 4) { calculateAndRender(); }
+    }
+
+    // 画像プレビューロジック
+    function previewAttachedImage(input) {
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          attachedImageBase64 = e.target.result;
+          document.getElementById('form-img-preview-tag').src = attachedImageBase64;
+          document.getElementById('form-img-preview-box').style.display = 'block';
+          document.getElementById('upload-placeholder').innerText = "✅ 画像のセット完了";
+        };
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+
+    function clearAttachedImage() {
+      attachedImageBase64 = "";
+      document.getElementById('form-image').value = "";
+      document.getElementById('form-img-preview-box').style.display = 'none';
+      document.getElementById('upload-placeholder').innerText = "📸 クリックまたはドラッグで画像をアップロード";
+    }
+
+    function executePurchase() {
+      const name = document.getElementById('purchase-name').value.trim();
+      const email = document.getElementById('purchase-email').value.trim();
+      if (!name || !email) { alert("名前とメールアドレスを入力してください。"); return; }
+
+      currentPurchase = { name, email };
+      document.getElementById('email-to-display').innerText = `${name} 様 <${email}>`;
+      document.getElementById('email-name-display').innerText = name;
+      document.getElementById('review-id-display').innerText = email;
+      document.getElementById('review-name-display').innerText = name;
+      goToStep(2);
+    }
+
+    function submitReview(event) {
+      event.preventDefault();
+
+      const rating = parseInt(document.querySelector('input[name="rating"]:checked').value);
+      const aroma = parseInt(document.querySelector('input[name="aroma"]').value);
+      const bitter = parseInt(document.querySelector('input[name="bitter"]').value);
+      const sweet = parseInt(document.querySelector('input[name="sweet"]').value);
+      const body = parseInt(document.querySelector('input[name="body"]').value);
+      const drink = parseInt(document.querySelector('input[name="drink"]').value);
+      const cost = parseInt(document.querySelector('input[name="cost"]').value);
+      const title = document.getElementById('form-title').value.trim();
+      const comment = document.getElementById('form-comment').value.trim();
+
+      // AI自動モデレーション
+      const alertEl = document.getElementById('ai-alert');
+      alertEl.style.display = "none";
+      let status = "公開";
+
+      const badWords = ["遅い", "届かない", "最悪", "詐欺"];
+      for (let word of badWords) { if (comment.includes(word)) { status = "要確認"; break; } }
+
+      if (status === "要確認") {
+        alertEl.style.display = "block";
+        alertEl.innerHTML = "⚠️【AI自動モデレーション発動】配送関連の不満、または不適切な表現が検知されたため保留データとして隔離しました。グラフには反映されません。";
+      }
+
+      const existingIdx = dbReviews.findIndex(r => r.id === currentPurchase.email);
+
+      // 既存データがある場合はスタンプ数を引き継ぐ
+      let oldStamps = { useful: 0, tasty: 0 };
+      if (existingIdx !== -1 && dbReviews[existingIdx].stamps) {
+        oldStamps = dbReviews[existingIdx].stamps;
+      }
+
+      const newReview = {
+        id: currentPurchase.email, name: currentPurchase.name,
+        rating, aroma, bitter, sweet, body, drink, cost,
+        title, comment, status,
+        image: attachedImageBase64, // 📸 ベース64化した画像URLを格納
+        stamps: oldStamps
+      };
+
+      if (existingIdx !== -1) { dbReviews[existingIdx] = newReview; } else { dbReviews.push(newReview); }
+
+      localStorage.setItem('ec_demo_advanced_reviews', JSON.stringify(dbReviews));
+      goToStep(4);
+    }
+
+    // 👍 【新機能】スタンプをクリックした時のインクリメント処理
+    function addStamp(reviewId, type) {
+      const idx = dbReviews.findIndex(r => r.id === reviewId);
+      if (idx !== -1) {
+        if (!dbReviews[idx].stamps) dbReviews[idx].stamps = { useful: 0, tasty: 0 };
+        dbReviews[idx].stamps[type]++;
+        localStorage.setItem('ec_demo_advanced_reviews', JSON.stringify(dbReviews));
+
+        // グラフやリストを再描画せずに該当ボタンの数値だけをアニメーション風に更新
+        const btn = document.querySelector(`[data-id="${reviewId}"][data-type="${type}"]`);
+        if (btn) {
+          const countSpan = btn.querySelector('.count');
+          countSpan.innerText = dbReviews[idx].stamps[type];
+          btn.classList.add('active');
+          setTimeout(() => btn.classList.remove('active'), 300);
+        }
+      }
+    }
+
+    function calculateAndRender() {
+      loadDatabase();
+      const publicReviews = dbReviews.filter(r => r.status === "公開");
+      const total = publicReviews.length;
+
+      let sumRating = 0;
+      let tasteSums = { aroma: 0, bitter: 0, sweet: 0, body: 0, drink: 0, cost: 0 };
+      let countMap = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+      let listHtml = "";
+
+      publicReviews.forEach(r => {
+        sumRating += r.rating;
+        countMap[r.rating]++;
+
+        ['aroma', 'bitter', 'sweet', 'body', 'drink', 'cost'].forEach(key => {
+          tasteSums[key] += r[key] || 3;
+        });
+
+        // 画像があるかどうかの判定用HTMLタグ
+        const imgTag = r.image ? `<div class="review-attached-img"><img src="${r.image}" alt="添付画像"></div>` : "";
+
+        // スタンプ数のデフォルト初期化
+        const uCount = r.stamps?.useful || 0;
+        const tCount = r.stamps?.tasty || 0;
+
+        listHtml += `
+          <div class="review-item">
+            <div class="review-meta">
+              <strong>${escapeHtml(r.name)} <span class="badge">購入者</span></strong>
+              <span style="color:var(--amber); font-weight:bold; font-size:1.1rem;">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</span>
+            </div>
+            
+            <div class="review-taste-grid">
+              <div>香り: <strong>Lv ${r.aroma}</strong></div><div>苦味: <strong>Lv ${r.bitter}</strong></div>
+              <div>甘味: <strong>Lv ${r.sweet}</strong></div><div>コク: <strong>Lv ${r.body}</strong></div>
+              <div>飲みやすさ: <strong>Lv ${r.drink}</strong></div><div>コスパ: <strong>Lv ${r.cost}</strong></div>
+            </div>
+
+            <div style="font-weight:bold; margin:6px 0 3px 0; font-size:1rem; color:var(--dark);">${escapeHtml(r.title)}</div>
+            <p style="margin:5px 0 0 0; font-size:0.9rem; color:#332211; white-space:pre-wrap; line-height:1.6;">${escapeHtml(r.comment)}</p>
+            
+            ${imgTag} <div class="stamp-area">
+              <button class="stamp-btn" data-id="${r.id}" data-type="useful" onclick="addStamp('${r.id}', 'useful')">
+                💡 参考になった <span class="count">${uCount}</span>
+              </button>
+              <button class="stamp-btn" data-id="${r.id}" data-type="tasty" onclick="addStamp('${r.id}', 'tasty')">
+                🍻 美味しそう！ <span class="count">${tCount}</span>
+              </button>
+            </div>
+
+            <div style="font-size:0.7rem; color:#aaa; margin-top:12px; text-align:right;">ID: ${escapeHtml(r.id)}</div>
+          </div>
+        `;
+      });
+
+      // 平均スコアの反映
+      const avgRating = total > 0 ? (sumRating / total).toFixed(1) : "0.0";
+      document.getElementById('ui-avg-num').innerText = avgRating;
+      document.getElementById('ui-avg-stars').innerText = '★'.repeat(Math.round(avgRating)) + '☆'.repeat(5 - Math.round(avgRating));
+      document.getElementById('ui-total-count').innerText = `総合評価（全 ${total} 件のカスタマーレビュー）`;
+
+      for (let i = 1; i <= 5; i++) {
+        const percent = total > 0 ? (countMap[i] / total) * 100 : 0;
+        document.getElementById(`bar${i}`).style.width = percent + "%";
+        document.getElementById(`cnt${i}`).innerText = countMap[i] + "件";
+      }
+
+      ['aroma', 'bitter', 'sweet', 'body', 'drink', 'cost'].forEach(key => {
+        const avg = total > 0 ? (tasteSums[key] / total).toFixed(1) : "0.0";
+        document.getElementById(`val-${key}`).innerText = avg;
+        document.getElementById(`r-${key}`).style.width = (avg / 5 * 100) + "%";
+      });
+
+      document.getElementById('reviews-list-area').innerHTML = listHtml || `<p style="color:#888; text-align:center;">表示可能な口コミがありません。</p>`;
+    }
+
+    function backToPurchase() {
+      document.getElementById('reviewForm').reset();
+      clearAttachedImage();
+      ['aroma', 'bitter', 'sweet', 'body', 'drink', 'cost'].forEach(k => { document.getElementById(`lbl-${k}`).innerText = "3"; });
+      const randomId = Math.floor(Math.random() * 90) + 10;
+      document.getElementById('purchase-name').value = "佐藤さん";
+      document.getElementById('purchase-email').value = `sato${randomId}@example.com`;
+      goToStep(1);
+    }
+
+    function resetDemo() {
+      if (confirm("これまでに蓄積したデータや画像、スタンプ数をすべて削除し、初期状態に戻しますか？")) {
+        localStorage.removeItem('ec_demo_advanced_reviews');
+        dbReviews = [...initialData];
+        localStorage.setItem('ec_demo_advanced_reviews', JSON.stringify(dbReviews));
+        backToPurchase();
+      }
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    }
+  </script>
+</body>
+
+</html>

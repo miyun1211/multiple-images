@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Myビール図鑑 & ECサイト連携 (商品ID連動版)</title>
+    <!-- 📊 Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --zukan-yellow: #ffb703;
+            --zukan-bg: #fffbe6;
+            --card-active-bg: #fff8d6;
+            --card-inactive-bg: #e9ecef;
+            --dark-brown: #5d4037;
+            --text-main: #3e2723;
+            --amber: #fda90d;
+            --primary-red: #9a1e22;
+        }
+
+        body {
+            font-family: 'Hiragino Kaku Gothic ProN', 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--zukan-bg);
+            color: var(--text-main);
+            margin: 0;
+            padding-bottom: 50px;
+        }
+
+        .zukan-header {
+            background-color: var(--zukan-yellow);
+            color: white;
+            text-align: center;
+            padding: 20px 10px;
+            font-size: 1.8rem;
+            font-weight: bold;
+            border-bottom: 6px dashed #ffffff;
+        }
+
+        .container {
+            max-width: 950px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        /* 🔄 メインタブナビゲーション */
+        .demo-nav {
+            background: #fff;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            border-radius: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            position: sticky;
+            top: 10px;
+            z-index: 100;
+        }
+
+        .demo-step {
+            padding: 8px 18px;
+            background: #e0e0e0;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #666;
+            cursor: pointer;
+        }
+
+        .demo-step.active {
+            background: var(--zukan-yellow);
+            color: white;
+        }
+
+        .demo-step.ec-tab.active {
+            background: var(--primary-red);
+        }
+
+        .step-view {
+            display: none;
+        }
+
+        .step-view.active {
+            display: block;
+        }
+
+        /* 🛒 EC商品ページスタイル */
+        .ec-product-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 25px;
+        }
+
+        .item-id-badge {
+            background: #2c3e50;
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-family: monospace;
+            display: inline-block;
+            margin-bottom: 6px;
+        }
+
+        .rating-summary-box {
+            background: #fff8eb;
+            border: 1px solid #ffe8cc;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .big-num {
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: var(--amber);
+            line-height: 1;
+        }
+
+        .dist-table {
+            width: 100%;
+            margin-bottom: 25px;
+        }
+
+        .dist-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+        }
+
+        .dist-label {
+            width: 40px;
+            font-weight: bold;
+        }
+
+        .dist-bar-track {
+            flex: 1;
+            background: #eee;
+            height: 10px;
+            border-radius: 5px;
+            margin: 0 10px;
+            overflow: hidden;
+        }
+
+        .dist-bar-fill {
+            background: var(--amber);
+            height: 100%;
+            width: 0%;
+            transition: width 0.4s;
+        }
+
+        .dist-count {
+            width: 45px;
+            text-align: right;
+            color: #666;
+        }
+
+        .radar-container {
+            background: #fdfbf7;
+            border: 1px solid #ebdcc5;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px 20px;
+        }
+
+        .radar-row {
+            display: flex;
+            flex-direction: column;
+            font-size: 0.85rem;
+        }
+
+        .radar-label-row {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .radar-bar-track {
+            background: #e8e4dc;
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .radar-bar-fill {
+            background: #6c8c5c;
+            height: 100%;
+            width: 0%;
+            transition: width 0.4s;
+        }
+
+        .review-item {
+            background: #f9f6f0;
+            border: 1px solid #eaddca;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 15px;
+        }
+
+        .review-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: #555;
+        }
+
+        .badge-user {
+            background: #7a6248;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+        }
+
+        .review-taste-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            background: white;
+            padding: 10px 12px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-size: 0.8rem;
+            border: 1px solid #e4e1e1;
+        }
+
+        /* 📋 Myビール図鑑スタイル */
+        .zukan-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 10px;
+        }
+
+        .beer-card {
+            background: var(--card-inactive-bg);
+            border: 3px dashed #bdc3c7;
+            border-radius: 18px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 6px 0 #bdc3c7;
+            transition: all 0.2s;
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .beer-card.active {
+            background: var(--card-active-bg);
+            border: 3px dashed var(--zukan-yellow);
+            box-shadow: 0 8px 0 #e6a100;
+        }
+
+        .beer-card-img-wrapper {
+            width: 100%;
+            height: 110px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .beer-thumb {
+            font-size: 3rem;
+        }
+
+        .beer-title {
+            font-weight: bold;
+            font-size: 0.95rem;
+            margin: 4px 0;
+            min-height: 2.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sync-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: var(--primary-red);
+            color: white;
+            font-size: 0.6rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            z-index: 2;
+        }
+
+        .sync-badge.private {
+            background: #777;
+        }
+
+        /* 📝 フォームスタイル */
+        .form-box {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 0.9rem;
+        }
+
+        .sync-checkbox-box {
+            background: #eaf2f8;
+            border: 2px solid #aed6f1;
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 18px;
+        }
+
+        .sync-checkbox-box label {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: bold;
+            color: #1a5276;
+            margin: 0;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            background: var(--zukan-yellow);
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #e6a100;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="zukan-header">Myビール図鑑 & ECサイト連携 (商品ID連動デモ)</div>
+
+    <div class="container">
+        <!-- 🔄 画面切替タブ -->
+        <div class="demo-nav">
+            <div class="demo-step ec-tab active" id="nav-ec" onclick="switchView('ec')">🛒 EC商品ページ</div>
+            <div class="demo-step" id="nav-zukan" onclick="switchView('zukan')">📋 Myビール図鑑</div>
+            <div class="demo-step" id="nav-form" onclick="switchView('form')">🍺 図鑑に記録/編集する</div>
+        </div>
+
+        <!-- ==================== 🛒 【画面1】EC商品ページ ==================== -->
+        <div class="step-view active" id="view-ec">
+            <!-- 商品切り替えセレクター -->
+            <div
+                style="background:#e2e8f0; padding:12px 18px; border-radius:12px; margin-bottom:20px; display:flex; align-items:center; justify-content:space-between;">
+                <span style="font-weight:bold; font-size:0.9rem;">🔎 表示するEC商品ページを切替:</span>
+                <select id="ec-product-selector" onchange="renderECProductPage()"
+                    style="width:auto; padding:6px 12px; font-weight:bold;">
+                    <option value="BEER-001">ヴァイエンステファン (ID: BEER-001)</option>
+                    <option value="BEER-002" selected>シュナイダー・ヴァイセ (ID: BEER-002)</option>
+                    <option value="BEER-003">ヒューガルデン・ホワイト (ID: BEER-003)</option>
+                </select>
+            </div>
+
+            <div class="ec-product-card">
+                <div style="display:flex; gap:15px; margin-bottom:15px;">
+                    <div style="font-size:3.5rem; line-height:1;" id="ec-display-emoji">🌾</div>
+                    <div>
+                        <span class="item-id-badge" id="ec-display-item-id">商品ID: BEER-002</span>
+                        <h2 style="margin:0; font-size:1.3rem; color:var(--dark-brown);" id="ec-display-title">
+                            シュナイダー・ヴァイセ 500ml</h2>
+                        <p style="margin:4px 0; color:#666; font-size:0.85rem;" id="ec-display-desc">
+                            ドイツ・ババリア地方の名門ヴァイツェンビール。</p>
+                        <p style="margin:0; color:var(--primary-red); font-weight:bold; font-size:1.1rem;"
+                            id="ec-display-price">¥720 (税込)</p>
+                    </div>
+                </div>
+
+                <!-- ⭐ 総合評価エリア -->
+                <div class="rating-summary-box">
+                    <div class="big-num" id="ec-avg-score">0.0</div>
+                    <div>
+                        <div style="color:var(--amber); font-size:1.5rem; line-height:1;" id="ec-avg-stars">☆☆☆☆☆</div>
+                        <div style="font-size:0.85rem; color:#666; margin-top:6px; font-weight:bold;"
+                            id="ec-total-reviews">総合評価</div>
+                    </div>
+                </div>
+
+                <!-- 📊 星評価分布 -->
+                <h4 style="margin:0 0 10px 0;">📊 評価分布</h4>
+                <div class="dist-table">
+                    <div class="dist-row">
+                        <div class="dist-label">星5</div>
+                        <div class="dist-bar-track">
+                            <div class="dist-bar-fill" id="ec-bar-5"></div>
+                        </div>
+                        <div class="dist-count" id="ec-cnt-5">0件</div>
+                    </div>
+                    <div class="dist-row">
+                        <div class="dist-label">星4</div>
+                        <div class="dist-bar-track">
+                            <div class="dist-bar-fill" id="ec-bar-4"></div>
+                        </div>
+                        <div class="dist-count" id="ec-cnt-4">0件</div>
+                    </div>
+                    <div class="dist-row">
+                        <div class="dist-label">星3</div>
+                        <div class="dist-bar-track">
+                            <div class="dist-bar-fill" id="ec-bar-3"></div>
+                        </div>
+                        <div class="dist-count" id="ec-cnt-3">0件</div>
+                    </div>
+                    <div class="dist-row">
+                        <div class="dist-label">星2</div>
+                        <div class="dist-bar-track">
+                            <div class="dist-bar-fill" id="ec-bar-2"></div>
+                        </div>
+                        <div class="dist-count" id="ec-cnt-2">0件</div>
+                    </div>
+                    <div class="dist-row">
+                        <div class="dist-label">星1</div>
+                        <div class="dist-bar-track">
+                            <div class="dist-bar-fill" id="ec-bar-1"></div>
+                        </div>
+                        <div class="dist-count" id="ec-cnt-1">0件</div>
+                    </div>
+                </div>
+
+                <!-- 👅 購入者の平均味覚メーター（6項目） -->
+                <h4 style="margin:20px 0 10px 0;">👅 購入者の平均味覚メーター</h4>
+                <div class="radar-container">
+                    <div class="radar-row">
+                        <div class="radar-label-row"><span>香り</span><span id="ec-val-aroma">0.0</span></div>
+                        <div class="radar-bar-track">
+                            <div class="radar-bar-fill" id="ec-r-aroma"></div>
+                        </div>
+                    </div>
+                    <div class="radar-row">
+                        <div class="radar-label-row"><span>苦味</span><span id="ec-val-bitter">0.0</span></div>
+                        <div class="radar-bar-track">
+                            <div class="radar-bar-fill" id="ec-r-bitter"></div>
+                        </div>
+                    </div>
+                    <div class="radar-row">
+                        <div class="radar-label-row"><span>甘味</span><span id="ec-val-sweet">0.0</span></div>
+                        <div class="radar-bar-track">
+                            <div class="radar-bar-fill" id="ec-r-sweet"></div>
+                        </div>
+                    </div>
+                    <div class="radar-row">
+                        <div class="radar-label-row"><span>コク</span><span id="ec-val-body">0.0</span></div>
+                        <div class="radar-bar-track">
+                            <div class="radar-bar-fill" id="ec-r-body"></div>
+                        </div>
+                    </div>
+                    <div class="radar-row">
+                        <div class="radar-label-row"><span>飲みやすさ</span><span id="ec-val-easy">0.0</span></div>
+                        <div class="radar-bar-track">
+                            <div class="radar-bar-fill" id="ec-r-easy"></div>
+                        </div>
+                    </div>
+                    <div class="radar-row">
+                        <div class="radar-label-row"><span>コスパ</span><span id="ec-val-cost">0.0</span></div>
+                        <div class="radar-bar-track">
+                            <div class="radar-bar-fill" id="ec-r-cost"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 💬 口コミ一覧 -->
+                <h4 style="margin:25px 0 12px 0; border-bottom:2px solid #eee; padding-bottom:6px;">💬
+                    カスタマーレビュー（商品ID一致データのみ表示）</h4>
+                <div id="ec-reviews-list"></div>
+            </div>
+        </div>
+
+        <!-- ==================== 📋 【画面2】Myビール図鑑 ==================== -->
+        <div class="step-view" id="view-zukan">
+            <div class="zukan-grid" id="zukan-container"></div>
+        </div>
+
+        <!-- ==================== 🍺 【画面3】図鑑に記録/編集する ==================== -->
+        <div class="step-view" id="view-form">
+            <div class="form-box">
+                <h3 style="margin-top:0; color:var(--dark-brown);">ビールを図鑑に記録・編集</h3>
+                <form onsubmit="saveBeerLog(event)">
+
+                    <div class="form-group">
+                        <label>記録する商品（商品IDで紐付け）</label>
+                        <select id="form-beer-id" onchange="loadSelectedBeerForm()">
+                            <option value="BEER-001">ヴァイエンステファン (ID: BEER-001)</option>
+                            <option value="BEER-002" selected>シュナイダー・ヴァイセ (ID: BEER-002)</option>
+                            <option value="BEER-003">ヒューガルデン・ホワイト (ID: BEER-003)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>日付</label>
+                        <input type="date" id="form-date" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>評価 / タイトル / 感想メモ</label>
+                        <select id="form-rating" style="margin-bottom:8px;">
+                            <option value="5">★★★★★ (星5)</option>
+                            <option value="4">★★★★☆ (星4)</option>
+                            <option value="3">★★★☆☆ (星3)</option>
+                            <option value="2">★★☆☆☆ (星2)</option>
+                            <option value="1">★☆☆☆☆ (星1)</option>
+                        </select>
+                        <input type="text" id="form-title" placeholder="レビュータイトル" style="margin-bottom:8px;" required>
+                        <textarea id="form-comment" rows="3" placeholder="テイスティングノート・レビュー本文" required></textarea>
+                    </div>
+
+                    <div
+                        style="background:#fffdec; padding:12px; border-radius:10px; margin-bottom:15px; border:1px solid #faebcc;">
+                        <span style="font-weight:bold; font-size:0.85rem; display:block; margin-bottom:8px;">📊
+                            味覚インプレッション（1~5）</span>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:0.8rem;">
+                            <div>香り: <input type="number" id="v-aroma" min="1" max="5" value="5"></div>
+                            <div>苦味: <input type="number" id="v-bitter" min="1" max="5" value="2"></div>
+                            <div>甘味: <input type="number" id="v-sweet" min="1" max="5" value="4"></div>
+                            <div>コク: <input type="number" id="v-body" min="1" max="5" value="4"></div>
+                            <div>飲みやすさ: <input type="number" id="v-easy" min="1" max="5" value="4"></div>
+                            <div>コスパ: <input type="number" id="v-cost" min="1" max="5" value="5"></div>
+                        </div>
+                    </div>
+
+                    <!-- 🔄 ✨ ECサイト連携チェックボックス ✨ -->
+                    <div class="sync-checkbox-box">
+                        <label>
+                            <input type="checkbox" id="form-sync-ec" checked style="width:18px; height:18px;">
+                            🔄 ECサイトの「あなたのレビュー」にも更新反映する
+                        </label>
+                        <div style="font-size:0.75rem; color:#555; margin-top:4px; padding-left:26px;">
+                            ※チェックを入れると、対応する商品ID（ECページ）にデータが連動します。
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn">図鑑に保存＆ECサイトへ反映 ➔</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 📦 商品マスター（商品IDが鍵となるデータ）
+        const beerMaster = [
+            { itemId: "BEER-001", name: "ヴァイエンステファン", emoji: "🍺", price: "¥680 (税込)", desc: "現存する世界最古の醸造所が造る王道ヴァイツェン。" },
+            { itemId: "BEER-002", name: "シュナイダー・ヴァイセ", emoji: "🌾", price: "¥720 (税込)", desc: "ドイツ・ババリア地方の名門ヴァイツェンビール。" },
+            { itemId: "BEER-003", name: "ヒューガルデン・ホワイト", emoji: "🍊", price: "¥450 (税込)", desc: "コリアンダーとオレンジピールが香る爽快ホワイトビール。" }
+        ];
+
+        // 💬 全レビューデータベース（itemId で各商品と紐付く）
+        const defaultDatabase = [
+            // BEER-001 の先行レビュー
+            { id: "rev_101", itemId: "BEER-001", user: "麦酒太郎", rating: 5, aroma: 5, bitter: 1, sweet: 3, body: 4, easy: 5, cost: 4, title: "フルーティーで飲みやすい", comment: "苦味が少なくて白ビール好きにはたまらない味わい。", isEcSynced: true, isUser: false },
+            // BEER-002 の先行レビュー
+            { id: "rev_201", itemId: "BEER-002", user: "ビアマスター", rating: 4, aroma: 4, bitter: 2, sweet: 4, body: 4, easy: 4, cost: 4, title: "コクがあってリッチ", comment: "麦芽の豊かな香りが広がる完成度の高い一杯。", isEcSynced: true, isUser: false },
+            // BEER-003 の先行レビュー
+            { id: "rev_301", itemId: "BEER-003", user: "ベルギー好き", rating: 5, aroma: 5, bitter: 1, sweet: 4, body: 2, easy: 5, cost: 5, title: "夏に最高の爽やかさ", comment: "オレンジピールの爽やかな香りでゴクゴク飲めます。", isEcSynced: true, isUser: false }
+        ];
+
+        let dbReviews = [];
+
+        window.onload = function () {
+            document.getElementById('form-date').value = new Date().toISOString().split('T')[0];
+            const saved = localStorage.getItem('integrated_beer_id_demo_db');
+            if (saved) {
+                dbReviews = JSON.parse(saved);
+            } else {
+                dbReviews = [...defaultDatabase];
+                saveDB();
+            }
+            renderAllViews();
+        };
+
+        function saveDB() {
+            localStorage.setItem('integrated_beer_id_demo_db', JSON.stringify(dbReviews));
+        }
+
+        function switchView(viewName) {
+            document.querySelectorAll('.step-view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.demo-step').forEach(s => s.classList.remove('active'));
+
+            document.getElementById(`view-${viewName}`).classList.add('active');
+            document.getElementById(`nav-${viewName}`).classList.add('active');
+
+            renderAllViews();
+            if (viewName === 'form') loadSelectedBeerForm();
+        }
+
+        function renderAllViews() {
+            renderECProductPage();
+            renderZukanGrid();
+        }
+
+        // 1. 選択された商品IDに基づいてEC商品ページを動的描画
+        function renderECProductPage() {
+            const currentItemId = document.getElementById('ec-product-selector').value;
+            const product = beerMaster.find(b => b.itemId === currentItemId);
+
+            // 商品ヘッダー情報の書き換え
+            document.getElementById('ec-display-item-id').innerText = `商品ID: ${product.itemId}`;
+            document.getElementById('ec-display-title').innerText = `${product.name} 500ml`;
+            document.getElementById('ec-display-desc').innerText = product.desc;
+            document.getElementById('ec-display-price').innerText = product.price;
+            document.getElementById('ec-display-emoji').innerText = product.emoji;
+
+            // 🔑 選択中の itemId かつ isEcSynced: true のレビューだけをフィルタリング！
+            const publicReviews = dbReviews.filter(r => r.itemId === currentItemId && r.isEcSynced);
+            const total = publicReviews.length;
+
+            let sumRating = 0;
+            let tasteSums = { aroma: 0, bitter: 0, sweet: 0, body: 0, easy: 0, cost: 0 };
+            let countMap = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+            let listHtml = "";
+
+            publicReviews.forEach(r => {
+                sumRating += r.rating;
+                countMap[r.rating]++;
+
+                ['aroma', 'bitter', 'sweet', 'body', 'easy', 'cost'].forEach(k => { tasteSums[k] += r[k] || 3; });
+
+                const userBadge = r.isUser ? `<span class="badge-user" style="background:var(--primary-red);">あなた</span>` : `<span class="badge-user">購入者</span>`;
+
+                listHtml += `
+                    <div class="review-item">
+                        <div class="review-meta">
+                            <strong>${r.user} ${userBadge}</strong>
+                            <span style="color:var(--amber); font-weight:bold;">${'★'.repeat(r.rating)}</span>
+                        </div>
+                        <div class="review-taste-grid">
+                            <div>香り: Lv${r.aroma}</div><div>苦味: Lv${r.bitter}</div><div>甘味: Lv${r.sweet}</div>
+                            <div>コク: Lv${r.body}</div><div>飲みやすさ: Lv${r.easy}</div><div>コスパ: Lv${r.cost}</div>
+                        </div>
+                        <div style="font-weight:bold; margin-top:4px;">${escapeHtml(r.title)}</div>
+                        <p style="margin:4px 0 0 0; font-size:0.85rem; color:#333;">${escapeHtml(r.comment)}</p>
+                    </div>
+                `;
+            });
+
+            // 集計結果の画面更新
+            const avgRating = total > 0 ? (sumRating / total).toFixed(1) : "0.0";
+            document.getElementById('ec-avg-score').innerText = avgRating;
+            document.getElementById('ec-avg-stars').innerText = '★'.repeat(Math.round(avgRating)) + '☆'.repeat(5 - Math.round(avgRating));
+            document.getElementById('ec-total-reviews').innerText = `総合評価 (商品ID: ${currentItemId} / 全 ${total} 件)`;
+
+            for (let i = 1; i <= 5; i++) {
+                const pct = total > 0 ? (countMap[i] / total) * 100 : 0;
+                document.getElementById(`ec-bar-${i}`).style.width = pct + "%";
+                document.getElementById(`ec-cnt-${i}`).innerText = countMap[i] + "件";
+            }
+
+            ['aroma', 'bitter', 'sweet', 'body', 'easy', 'cost'].forEach(k => {
+                const avg = total > 0 ? (tasteSums[k] / total).toFixed(1) : "0.0";
+                document.getElementById(`ec-val-${k}`).innerText = avg;
+                document.getElementById(`ec-r-${k}`).style.width = (avg / 5 * 100) + "%";
+            });
+
+            document.getElementById('ec-reviews-list').innerHTML = listHtml || `<p style="color:#888; font-size:0.85rem;">この商品（ID: ${currentItemId}）の公開レビューはまだありません。</p>`;
+        }
+
+        // 2. 図鑑グリッド描画
+        function renderZukanGrid() {
+            const container = document.getElementById('zukan-container');
+            let html = "";
+
+            beerMaster.forEach(beer => {
+                // 自分の記録から itemId が一致するものを探す
+                const userLog = dbReviews.find(r => r.itemId === beer.itemId && r.isUser);
+                if (userLog) {
+                    const syncTag = userLog.isEcSynced
+                        ? `<span class="sync-badge">🌐 EC連携済</span>`
+                        : `<span class="sync-badge private">🔒 マイ図鑑のみ</span>`;
+
+                    html += `
+                        <div class="beer-card active" onclick="selectAndGoToForm('${beer.itemId}')">
+                            ${syncTag}
+                            <div class="beer-card-img-wrapper"><span class="beer-thumb">${beer.emoji}</span></div>
+                            <div class="beer-title">${beer.name}</div>
+                            <div style="font-size:0.7rem; color:#666; margin-bottom:4px;">ID: ${beer.itemId}</div>
+                            <div style="color:var(--amber); font-size:0.8rem;">${'★'.repeat(userLog.rating)}</div>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="beer-card" onclick="selectAndGoToForm('${beer.itemId}')">
+                            <div class="beer-card-img-wrapper"><span class="beer-thumb">❓</span></div>
+                            <div class="beer-title" style="color:#aaa;">${beer.name}</div>
+                            <div style="font-size:0.7rem; color:#aaa;">ID: ${beer.itemId} (未記録)</div>
+                        </div>
+                    `;
+                }
+            });
+
+            container.innerHTML = html;
+        }
+
+        function selectAndGoToForm(itemId) {
+            document.getElementById('form-beer-id').value = itemId;
+            switchView('form');
+        }
+
+        // 3. フォームに選択中の商品IDデータをロード
+        function loadSelectedBeerForm() {
+            const itemId = document.getElementById('form-beer-id').value;
+            const log = dbReviews.find(r => r.itemId === itemId && r.isUser);
+
+            if (log) {
+                document.getElementById('form-date').value = log.date || new Date().toISOString().split('T')[0];
+                document.getElementById('form-rating').value = log.rating;
+                document.getElementById('form-title').value = log.title;
+                document.getElementById('form-comment').value = log.comment;
+                ['aroma', 'bitter', 'sweet', 'body', 'easy', 'cost'].forEach(k => {
+                    document.getElementById(`v-${k}`).value = log[k] || 3;
+                });
+                document.getElementById('form-sync-ec').checked = log.isEcSynced;
+            } else {
+                document.getElementById('form-title').value = "";
+                document.getElementById('form-comment').value = "";
+                document.getElementById('form-sync-ec').checked = true;
+            }
+        }
+
+        // 4. レビュー保存処理（商品IDを保持して保存）
+        function saveBeerLog(e) {
+            e.preventDefault();
+            const itemId = document.getElementById('form-beer-id').value;
+            const isSyncChecked = document.getElementById('form-sync-ec').checked;
+
+            let logIndex = dbReviews.findIndex(r => r.itemId === itemId && r.isUser);
+
+            const newLog = {
+                id: logIndex !== -1 ? dbReviews[logIndex].id : `rev_user_${Date.now()}`,
+                itemId: itemId, // 🔑 商品IDで紐付け！
+                user: "あなた（マイ図鑑）",
+                rating: parseInt(document.getElementById('form-rating').value),
+                title: document.getElementById('form-title').value.trim(),
+                comment: document.getElementById('form-comment').value.trim(),
+                aroma: parseInt(document.getElementById('v-aroma').value),
+                bitter: parseInt(document.getElementById('v-bitter').value),
+                sweet: parseInt(document.getElementById('v-sweet').value),
+                body: parseInt(document.getElementById('v-body').value),
+                easy: parseInt(document.getElementById('v-easy').value),
+                cost: parseInt(document.getElementById('v-cost').value),
+                isEcSynced: isSyncChecked,
+                isUser: true,
+                date: document.getElementById('form-date').value
+            };
+
+            if (logIndex !== -1) {
+                dbReviews[logIndex] = newLog;
+            } else {
+                dbReviews.push(newLog);
+            }
+
+            saveDB();
+
+            // ECページ側の選択ドロップダウンも、今保存した商品IDに自動で合わせる
+            document.getElementById('ec-product-selector').value = itemId;
+
+            alert(`商品ID [${itemId}] のレビューを保存しました！ECページで確認できます。`);
+            switchView('ec');
+        }
+
+        function escapeHtml(str) { return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;'); }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>商品ページ改善サンプル（ボタン位置交換版）</title>
+
+  <!-- ================================================================
+  ■ CSS: 見た目を装飾する「デザイン」
+  ================================================================ -->
+  <style>
+    /* === カラーテーマと基本設定 === */
+    :root {
+      --header-bg: #4a0e0e;
+      /* ヘッダー背景の濃い赤茶色 */
+      --primary-red: #9a1e22;
+      /* メインの赤色 */
+      --accent-gold: #ffc107;
+      /* アクセントの黄色/ゴールド */
+      --text-color: #333;
+      --light-bg: #fdfdfd;
+      --border-color: #eee;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      background-color: var(--light-bg);
+      color: var(--text-color);
+    }
+
+    .product-container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+      padding-bottom: 100px;
+      /* 固定ボタン分の余白 */
+    }
+
+    h1 {
+      font-size: 24px;
+    }
+
+    h2 {
+      font-size: 20px;
+      border-bottom: 2px solid var(--primary-red);
+      padding-bottom: 8px;
+      margin-top: 40px;
+    }
+
+    h3 {
+      font-size: 18px;
+      border-left: 4px solid var(--primary-red);
+      padding-left: 10px;
+      margin-top: 30px;
+    }
+
+    a {
+      color: #007bff;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    hr {
+      border: none;
+      border-top: 1px solid var(--border-color);
+      margin: 40px 0;
+    }
+
+    .clearfix::after {
+      content: "";
+      clear: both;
+      display: table;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    /* === ヘッダー === */
+    .page-header {
+      background-color: var(--header-bg);
+      color: white;
+      padding-bottom: 10px;
+      border-bottom: 5px solid #e0e0e0;
+    }
+
+    .header-top-bar {
+      height: 10px;
+      background: linear-gradient(to right, #000 33.3%, #dd0000 33.3%, #dd0000 66.6%, #ffce00 66.6%);
+    }
+
+    .header-container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo-area a {
+      color: white;
+      text-decoration: none;
+      font-size: 28px;
+      font-weight: bold;
+      font-style: italic;
+    }
+
+    .nav-icons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .nav-icon {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 50px;
+      height: 50px;
+      background-color: var(--primary-red);
+      border-radius: 50%;
+      color: white;
+      text-decoration: none;
+      transition: background-color 0.2s;
+    }
+
+    .nav-icon:hover {
+      background-color: #c62828;
+    }
+
+    .nav-icon svg {
+      width: 24px;
+      height: 24px;
+      fill: white;
+    }
+
+    /* === 上部：商品情報 === */
+    /* .product-image {
+      max-width: 150px;
+      float: left;
+      margin-right: 20px;
+    } */
+
+    /* --- ギャラリー用追加スタイル(複数画像表示) --- */
+    .product-gallery {
+      width: 100%;
+      background-color: #fff;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+
+    .main-image-container {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      overflow: hidden;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #eee;
+    }
+
+    .main-image-container img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      cursor: pointer;
+    }
+
+    .arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 40px;
+      height: 40px;
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 10;
+      font-weight: bold;
+    }
+
+    .arrow.left {
+      left: 10px;
+    }
+
+    .arrow.right {
+      right: 10px;
+    }
+
+    .thumbnail-container {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 5px;
+    }
+
+    .thumbnail-container img {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      cursor: pointer;
+      border: 2px solid transparent;
+      flex-shrink: 0;
+    }
+
+    .thumbnail-container img.active {
+      border-color: var(--primary-red);
+    }
+
+    /* モーダル関連のスタイル（複数画像表示に関して） */
+    .modal-overlay {
+      flex-direction: column;
+      /* 中身を縦に並べる */
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+
+    .modal-overlay.modal-open {
+      display: flex;
+    }
+
+    .modal-content {
+      max-width: 90%;
+      max-height: 70%;
+      object-fit: contain;
+    }
+
+    /* 説明文を画像の下に配置し、白文字にする */
+    .modal-description {
+      color: #fff;
+      margin-top: 20px;
+      font-size: 16px;
+      text-align: center;
+      max-width: 80%;
+      line-height: 1.5;
+    }
+
+    /* 閉じるボタン（×）を見やすくする */
+    .modal-close-button {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      color: #fff;
+      font-size: 40px;
+      font-weight: bold;
+      cursor: pointer;
+      z-index: 2100;
+    }
+
+    /* モーダル内の矢印ボタン */
+    .modal-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      color: white;
+      font-size: 40px;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 20px;
+      user-select: none;
+      z-index: 2100;
+      transition: color 0.2s;
+    }
+
+    .modal-arrow:hover {
+      color: var(--accent-gold);
+    }
+
+    .modal-arrow.left {
+      left: 10px;
+    }
+
+    .modal-arrow.right {
+      right: 10px;
+    }
+
+
+
+    /* === クイックジャンプリンク === */
+    .quick-jump-links {
+      display: flex;
+      justify-content: space-around;
+      gap: 50px;
+      /* 項目間のスペースを調整 */
+      margin: 30px 0;
+      padding: 15px 0;
+      background-color: #f7f5f2;
+      /* 薄いベージュ系の背景色 */
+      border-top: 1px solid var(--border-color);
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .quick-jump-links a {
+      /* ボタンのスタイルをリセット */
+      text-decoration: none;
+      color: var(--text-color);
+      font-weight: bold;
+      font-size: 16px;
+      transition: color 0.2s;
+    }
+
+    .quick-jump-links a:hover {
+      /* ホバー時は文字色を変更 */
+      color: var(--primary-red);
+      text-decoration: none;
+    }
+
+    /* === 中部：タブUI === */
+    .tabs {
+      display: flex;
+      width: 100%;
+      background-color: #f2f2f2;
+      /* 薄いグレーの背景 */
+      border-bottom: 1px solid #ccc;
+      margin: 20px 0 0 0;
+    }
+
+    .tab-button {
+      flex: 1;
+      /* タブを等倍で横いっぱいに広げる */
+      padding: 12px 5px;
+      border: none;
+      background: none;
+      font-size: 14px;
+      font-weight: bold;
+      color: #333;
+      cursor: pointer;
+      text-align: center;
+      border-right: 1px solid #ccc;
+      /* 境界線 */
+    }
+
+    .tab-button:hover {
+      background-color: #f1f1f1;
+    }
+
+    .tab-button.active {
+      border-bottom: 3px solid var(--primary-red);
+      font-weight: bold;
+    }
+
+    .tab-content {
+      display: none;
+      padding: 15px;
+      border: 1px solid #ccc;
+      border-top: none;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      border: 1px solid #ddd;
+      padding: 12px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f9f9f9;
+      width: 30%;
+    }
+
+    /* === 中部：購入エリア === */
+    /* --- デザインA改: 左寄せ＆横並びスタイル --- */
+    #purchase-area {
+      background-color: #fff;
+      padding: 25px 20px;
+      border: 1px solid #eee;
+      border-radius: 12px;
+      margin: 20px 0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      /* 軽い影で高級感を出す */
+    }
+
+    /* 「販売価格」ラベルを左寄せ */
+    .price-label-left {
+      display: block;
+      text-align: left;
+      font-size: 18px;
+      color: #666;
+      font-weight: bold;
+      margin-left: 2px;
+      margin-bottom: -5px;
+      /* 下との隙間をマイナスで詰める */
+    }
+
+    .price-main-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: flex-start;
+      /* 左寄せ */
+      margin-top: 0px;
+      /* 上の余白をリセット */
+      line-height: 1;
+      /* 行の高さを最小限にする */
+    }
+
+    .price-symbol {
+      font-size: 26px;
+      font-weight: 900;
+      color: #000;
+    }
+
+    .price-main {
+      font-size: 56px;
+      /* 極太の大きな数字 */
+      font-weight: 900;
+      color: #000;
+      letter-spacing: -2px;
+      /* 字間を詰めて力強く */
+      line-height: 1;
+    }
+
+    .price-sub {
+      font-size: 15px;
+      color: #555;
+      margin-left: 8px;
+      font-weight: bold;
+    }
+
+    /* 数量とボタンを横一列に並べる */
+    .purchase-action-row {
+      display: flex;
+      align-items: flex-end;
+      /* 下のラインを揃える */
+      gap: 12px;
+      margin-top: 25px;
+    }
+
+    .quantity-box {
+      display: flex;
+      flex-direction: column;
+      text-align: left;
+    }
+
+    .quantity-box label {
+      font-size: 12px;
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: #666;
+    }
+
+    #quantity {
+      padding: 0 10px;
+      font-size: 18px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      background-color: #f9f9f9;
+      height: 54px;
+      /* ボタンと高さを統一 */
+      width: 70px;
+    }
+
+    /* 購入ボタン */
+    .purchase-button {
+      flex: 1;
+      /* 横幅いっぱいに広げる */
+      background-color: var(--accent-gold);
+      color: #333;
+      border: none;
+      height: 54px;
+      font-size: 18px;
+      font-weight: 900;
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 0 #d9a406;
+      /* 立体的な影 */
+      transition: all 0.1s;
+    }
+
+    .cart-icon {
+      width: 22px;
+      height: 22px;
+      fill: currentColor;
+      margin-right: 8px;
+    }
+
+    .purchase-button:active {
+      transform: translateY(3px);
+      /* 押し込む動き */
+      box-shadow: 0 1px 0 #d9a406;
+    }
+
+    /* === 下部：配送情報・関連商品 === */
+    #shipping-info {
+      background-color: #f9f9f9;
+      padding: 20px;
+      border-radius: 4px;
+    }
+
+    #related-items ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    #related-items li {
+      padding: 8px 0;
+      border-bottom: 1px dashed var(--border-color);
+    }
+
+    #related-items li a {
+      text-decoration: underline;
+    }
+
+    /* === フッター === */
+    .page-footer {
+      text-align: center;
+      margin-top: 50px;
+      padding: 20px;
+      background-color: #343a40;
+      color: #fff;
+    }
+
+    .page-footer a {
+      color: var(--accent-gold);
+    }
+
+    /* ▼▼▼ ここを変更 ▼▼▼ */
+    /* === 固定買い物かごボタン（位置を上に） === */
+    .fixed-cart-button {
+      position: fixed;
+      bottom: 150px;
+      /* 変更：20px → 90px */
+      right: 20px;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      background-color: var(--accent-gold);
+      color: var(--text-color);
+      padding: 12px 20px;
+      border-radius: 50px;
+      text-decoration: none;
+      font-size: 16px;
+      font-weight: bold;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      transition: transform 0.2s ease-out;
+    }
+
+    .fixed-cart-button:hover {
+      transform: scale(1.05);
+    }
+
+    .fixed-cart-button svg {
+      width: 24px;
+      height: 24px;
+      margin-right: 8px;
+      fill: var(--text-color);
+    }
+
+    /* === ページトップへ戻るボタン（位置を下に） === */
+    .scroll-to-top {
+      position: fixed;
+      bottom: 70px;
+      /* 変更：90px → 20px */
+      right: 20px;
+      z-index: 999;
+      background-color: var(--primary-red);
+      /* 色をヘッダーと統一 */
+      color: white;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 50px;
+      font-size: 24px;
+      font-weight: bold;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    /* ▲▲▲ 変更ここまで ▲▲▲ */
+  </style>
+</head>
+
+
+<!-- ユーザーに見えるコンテンツはここ (Bodyの中身) -->
+
+<body>
+  <!-- ================================================================
+  ■ HTML: ウェブページの「骨格」と「内容」
+  ================================================================ -->
+
+  <header class="page-header">
+    <div class="header-top-bar"></div>
+    <div class="header-container">
+      <div class="logo-area">
+        <a href="#">bier.jp</a>
+        <div style="font-size: 12px; font-style: normal; color: #ddd;">ドイツビールの通信販売</div>
+      </div>
+      <nav class="nav-icons">
+        <a href="#" class="nav-icon" aria-label="検索"><svg viewBox="0 0 24 24">
+            <path
+              d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+          </svg></a>
+        <a href="#" class="nav-icon" aria-label="買い物かご"><svg viewBox="0 0 24 24">
+            <path
+              d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z" />
+          </svg></a>
+        <a href="#" class="nav-icon" aria-label="メニュー"><svg viewBox="0 0 24 24">
+            <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
+          </svg></a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="product-container">
+
+    <h1>【※バラ売り】パウラナー・オクトーバーフェストビア【2026】</h1>
+
+    <!-- 画像表示 -->
+    <section id="product-info">
+      <div class="text-wrapper" style="width: 100%;">
+        <h2 style="border-bottom: 2px solid var(--primary-red); padding-bottom: 8px;">
+          Paulaner Oktoberfestbier 2026
+        </h2>
+        <p id="imageDescription" style="color: #666; font-size: 1rem; line-height: 1.6; margin-top: 10px;">
+        </p>
+      </div>
+
+      <div class="gallery-wrapper" style="width: 100%; margin-bottom: 20px;">
+        <div class="product-gallery">
+          <div class="main-image-container">
+            <img id="mainImage" src="" alt="メイン画像">
+            <div class="arrow left" onclick="changeMainImage(-1)">&#10094;</div>
+            <div class="arrow right" onclick="changeMainImage(1)">&#10095;</div>
+          </div>
+          <div class="thumbnail-slider-wrapper">
+            <div id="thumbnailContainer" class="thumbnail-container"></div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- <section id="product-info" class="clearfix">
+      <img src="images\bier1.png" alt="ホフブロイ・オクトーバーフェストビア" class="product-image">
+      <div>
+        <h2>Hofbräu Oktoberfestbier 2025</h2>
+        <!-- <p>
+          世界最大のビール祭り「オクトーバーフェスト」で、座席数1万席を数える最大テントが「バイエルン州立ホフブロイ・ミュンヘン醸造所」です。そのオクトーバーフェストメインビールがついに登場！<br>爽やかな苦味とほのかな甘みが絶妙で、ゴクゴクと飲めるビールです。
+        </p> -->
+  </div>
+  </section>
+
+
+
+  <!-- 購入エリア -->
+  <section id="purchase-area">
+
+    <div class="price-container-a">
+      <span class="price-label-left">販売価格</span>
+      <div class="price-main-row">
+        <span class="price-symbol">¥</span>
+        <span class="price-main">680</span>
+        <span class="price-sub">(税込) / 本</span>
+      </div>
+    </div>
+
+    <div class="purchase-action-row">
+      <div class="quantity-box">
+        <label for="quantity">数量</label>
+        <select id="quantity" name="quantity">
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+        </select>
+      </div>
+
+      <button class="purchase-button">
+        <svg class="cart-icon" viewBox="0 0 24 24">
+          <path
+            d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z" />
+        </svg>
+        買い物かご
+      </button>
+    </div>
+  </section>
+
+  <!-- <div class="quick-jump-links">
+      <a href="#product-details">詳細情報</a>
+      <a href="#history">閲覧履歴</a>
+      <a href="#similar-items">類似商品</a>
+    </div> -->
+
+  <section id="product-details">
+    <h2>詳細情報</h2>
+    <div class="tabs">
+      <button class="tab-button active" onclick="openTab(event, 'product-intro-tab')">商品紹介</button>
+      <button class="tab-button" onclick="openTab(event, 'review-tab')">レビュー</button>
+    </div>
+
+    <div id="product-intro-tab" class="tab-content" style="display: block;">
+      <h3 style="border-left: 4px solid var(--primary-red); padding-left: 8px;">
+        ビール王国、本場ドイツで愛されNo.1！</h3>
+      <p>・公認の6大醸造所の中でNo.1の知名度を誇るパウラナー社がオクトーバーフェストの為だけに醸造した特別なビールです。
+        <br>・品格ある、飲み飽きしない味わいのあるラガータイプです。
+        <br>・アルコール度数もやや高めの仕上がりですが、日本人好みの味わい！！
+      </p>
+      <br>
+
+      <p>※画像はイメージとなり、ラベル等が変更になる場合がございます。</p>
+      <p>▼パウラナー専用グラス・ジョッキもご用意しておりますのでご覧ください！
+        <br>専用グラス（ヴァイスビア）：「300ml」
+        <br>専用ジョッキ：「1000ml」
+      </p>
+      <p>◎ケース売りは→「 こちら 」</p>
+
+      <table>
+        <tr>
+          <th>在庫</th>
+          <td>◎</td>
+        </tr>
+        <tr>
+          <th>容量</th>
+          <td>500ml</td>
+        </tr>
+        <tr>
+          <th>アルコール</th>
+          <td>6.0%</td>
+        </tr>
+        <tr>
+          <th>スタイル</th>
+          <td>オクトーバーフェスト</td>
+        </tr>
+        <tr>
+          <th>生産地</th>
+          <td>バイエルン州</td>
+        </tr>
+
+      </table>
+    </div>
+
+    <div id="review-tab" class="tab-content">
+      <p>現在、口コミ投稿はありません。</p>
+    </div>
+
+  </section>
+
+  <hr>
+
+
+
+  <section id="related-items">
+    <h2 id="history">閲覧履歴</h2>
+    <ul>
+      <li><a href="#">【※バラ売り】パウラナー・オクトーバーフェストビア [2025]</a></li>
+      <li><a href="#">【※バラ売り】ホフブロイ ヘーフェ ヴァイツェン</a></li>
+    </ul>
+
+    <h2 id="similar-items">同じ種類の商品</h2>
+    <ul>
+      <li><a href="#">パウラナー・オクトーバーフェスト 専用ジョッキ [500ml]</a></li>
+    </ul>
+  </section>
+  </div>
+
+
+  <footer class="page-footer">
+    <p>[運営会社：<a href="#">株式会社ヒューメイア</a>]</p>
+  </footer>
+
+  <!-- 追従 購入ボックス -->
+  <a href="#purchase-area" class="fixed-cart-button">
+    <svg viewBox="0 0 24 24">
+      <path
+        d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z" />
+    </svg>
+    買い物かごへ
+  </a>
+
+  <a href="#" class="scroll-to-top">↑</a>
+
+
+  <!-- ================================================================
+  ■ javaScript: ページに「動き」や「機能」を追加
+  ================================================================ -->
+
+  <script>
+    /*
+    ================================================================
+    ■ 機能1: タブ切り替え機能
+    ================================================================
+    */
+    function openTab(evt, tabName) {
+      const tabContents = document.getElementsByClassName("tab-content");
+      for (let i = 0; i < tabContents.length; i++) {
+        tabContents[i].style.display = "none";
+      }
+
+      const tabLinks = document.getElementsByClassName("tab-button");
+      for (let i = 0; i < tabLinks.length; i++) {
+        tabLinks[i].className = tabLinks[i].className.replace(" active", "");
+      }
+
+      const targetContent = document.getElementById(tabName);
+      if (targetContent) {
+        targetContent.style.display = "block";
+      }
+
+      evt.currentTarget.className += " active";
+    }
+
+
+    /*
+    ================================================================
+    ■ ページの読み込み完了後に実行される初期設定
+    ================================================================
+    */
+    document.addEventListener("DOMContentLoaded", function () {
+
+      // --- 初期設定A: デフォルトで最初のタブを表示する ---
+      const firstTabButton = document.querySelector('.tab-button');
+      if (firstTabButton) {
+        firstTabButton.click();
+      }
+
+      // --- 初期設定B: 追従ボタンのスクロール機能を設定する ---
+      const fixedCartButton = document.querySelector('.fixed-cart-button');
+      if (fixedCartButton) {
+        // ボタンがクリックされたときのイベントを設定します
+        fixedCartButton.addEventListener('click', function (event) {
+          // <a> タグのデフォルトの動作（ページ内リンクへの移動）をキャンセルします
+          event.preventDefault();
+
+          const purchaseArea = document.getElementById('purchase-area');
+
+          // 購入エリアが存在する場合にスクロールを実行します
+          if (purchaseArea) {
+            // 調整したいピクセル数を指定します
+            // プラスの値: 中央より上にずれる
+            // マイナスの値: 中央より下にずれる
+            const offset = -100; // 例: 100px上にずらす
+
+            // purchaseAreaの画面上の位置情報を取得
+            const rect = purchaseArea.getBoundingClientRect();
+            // 現在のスクロール量を取得
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+            // purchaseAreaの中心が画面の中心に来るY座標を計算
+            const targetY = rect.top + scrollTop - (window.innerHeight / 2) + (rect.height / 2);
+
+            // 計算したY座標から、指定したオフセット分だけ引きます
+            const finalY = targetY - offset;
+
+            // 計算した位置までスムーズにスクロール
+            window.scrollTo({
+              top: finalY,
+              behavior: 'smooth'
+            });
+          }
+        });
+      }
+
+      // --- 今後、新しい機能の初期設定を追加する場合は、この下に追加します ---
+      // 例: initImageSlider();
+
+    });
+
+
+    /*
+    ================================================================
+    ■ 複数画像表示の設定
+    ================================================================
+    */
+    // 1. 画像データの定義
+    const imageSources = [
+      { src: 'images/bier1.png', description: 'ホフブロイ・オクトーバーフェストビールのボトル外観。' },
+      { src: 'images/bier1_glass.png', description: '専用ジョッキに注いだ黄金色のビール。' },
+      { src: 'images/bier1_bbq.png', description: 'バーベキュー料理との相性も抜群です。' }
+    ];
+    let currentIndex = 0;
+
+    // 2. ギャラリー制御関数（メイン画面用）
+    function selectImage(index) {
+      currentIndex = index;
+      const mainImg = document.getElementById('mainImage');
+      if (mainImg) {
+        mainImg.src = imageSources[currentIndex].src;
+      }
+
+      // サムネイルの枠線更新
+      const thumbs = document.querySelectorAll('.thumbnail-container img');
+      thumbs.forEach((t, i) => t.classList.toggle('active', i === index));
+    }
+
+    function changeMainImage(direction) {
+      currentIndex = (currentIndex + direction + imageSources.length) % imageSources.length;
+      selectImage(currentIndex);
+    }
+
+    /* --- モーダル制御ロジック --- */
+    // モーダル内の表示を更新する関数
+    function updateModalContent() {
+      const modalImage = document.getElementById('modalImage');
+      const modalDescription = document.getElementById('modalDescription');
+      if (modalImage && modalDescription) {
+        modalImage.src = imageSources[currentIndex].src;
+        modalDescription.textContent = imageSources[currentIndex].description;
+      }
+    }
+
+    // モーダル用の画像切り替え（左右）
+    function changeModalImage(direction) {
+      currentIndex = (currentIndex + direction + imageSources.length) % imageSources.length;
+      updateModalContent();
+      selectImage(currentIndex); // 背面のメイン画像とサムネイルも連動させる
+    }
+
+    // 3. 初期化処理（ページの読み込み完了時に実行）
+    document.addEventListener("DOMContentLoaded", function () {
+
+      // --- サムネイルの生成 ---
+      const thumbContainer = document.getElementById('thumbnailContainer');
+      if (thumbContainer) {
+        imageSources.forEach((item, index) => {
+          const img = document.createElement('img');
+          img.src = item.src;
+          img.onclick = () => selectImage(index);
+          thumbContainer.appendChild(img);
+        });
+      }
+
+      selectImage(0); // 最初の画像を表示
+
+      // --- モーダル関連のイベント設定 ---
+      const modal = document.getElementById('modal');
+      const mainImg = document.getElementById('mainImage');
+      const closeBtn = document.getElementById('closeButton');
+      const arrowLeft = document.getElementById('modalArrowLeft');
+      const arrowRight = document.getElementById('modalArrowRight');
+
+      // 画像クリックでモーダルを開く
+      if (mainImg) {
+        mainImg.onclick = () => {
+          modal.classList.add('modal-open');
+          updateModalContent();
+        };
+      }
+
+      // 左矢印クリック
+      if (arrowLeft) {
+        arrowLeft.onclick = (e) => {
+          e.stopPropagation(); // 背景クリックイベント（閉じる）を防止
+          changeModalImage(-1);
+        };
+      }
+
+      // 右矢印クリック
+      if (arrowRight) {
+        arrowRight.onclick = (e) => {
+          e.stopPropagation();
+          changeModalImage(1);
+        };
+      }
+
+      // ×ボタンで閉じる
+      if (closeBtn) {
+        closeBtn.onclick = () => {
+          modal.classList.remove('modal-open');
+        };
+      }
+
+      // 背景クリックで閉じる
+      if (modal) {
+        modal.onclick = (event) => {
+          if (event.target === modal) {
+            modal.classList.remove('modal-open');
+          }
+        };
+      }
+    });
+
+
+    /*
+    ================================================================
+    ■ 購入ボタン後の画面
+    ================================================================
+    /* 購入フローの制御 */
+
+    // 全ての読み込みが終わってから実行するようにイベントリスナーの中に入れる
+    document.addEventListener("DOMContentLoaded", function () {
+
+      // 買い物かごボタンを取得
+      const buyBtn = document.querySelector('.purchase-button');
+
+      if (buyBtn) {
+        buyBtn.onclick = function (e) {
+          e.preventDefault();
+
+          // 1. 数量の取得
+          const qtyElement = document.getElementById('quantity');
+          const qty = qtyElement ? parseInt(qtyElement.value) : 1;
+
+          // 2. 金額の計算 (単価680円 × 数量)
+          const unitPrice = 680;
+          const totalPrice = unitPrice * qty;
+
+          // 3. メイン画像のURLを取得 (id="mainImage" から取得)
+          const mainImg = document.getElementById('mainImage');
+          const mainImgSrc = mainImg ? mainImg.src : "";
+
+          // 確認画面への反映
+          const confirmImg = document.getElementById('confirm-img');
+          const confirmQty = document.getElementById('confirm-qty-display');
+          const confirmTotal = document.getElementById('confirm-total');
+
+          if (confirmImg) confirmImg.src = mainImgSrc;
+          if (confirmQty) confirmQty.innerText = "数量: " + qty;
+          if (confirmTotal) confirmTotal.innerText = "合計: ¥" + totalPrice.toLocaleString();
+
+          // モーダルの表示
+          const purchaseModal = document.getElementById('purchase-flow-modal');
+          if (purchaseModal) {
+            purchaseModal.classList.add('modal-open');
+            document.getElementById('step-confirm').style.display = 'block';
+            document.getElementById('step-complete').style.display = 'none';
+          }
+        };
+      }
+    });
+
+    // 注文確定ボタン押下時
+    function goToComplete() {
+      document.getElementById('step-confirm').style.display = 'none';
+      document.getElementById('step-complete').style.display = 'block';
+    }
+
+    // モーダルを閉じる（買い物を続ける）
+    function closePurchaseModal() {
+      document.getElementById('purchase-flow-modal').classList.remove('modal-open');
+    }
+
+    // トップへ戻る（擬似的なリダイレクト）
+    function goToTop() {
+      // 実際には URL を指定します。例: window.location.href = 'index.html';
+      alert("トップ画面へ戻ります。");
+      location.reload();
+    }
+
+
+  </script>
+
+
+  <!-- モーダルHTMLの挿入 -->
+  <div id="modal" class="modal-overlay">
+    <span id="closeButton" class="modal-close-button">&times;</span>
+    <img id="modalImage" class="modal-content" src="" alt="拡大画像">
+    <p id="modalDescription" class="modal-description"></p>
+
+    <div id="modalArrowLeft" class="modal-arrow left">&#10094;</div>
+    <div id="modalArrowRight" class="modal-arrow right">&#10095;</div>
+    <div id="modalPagination" class="modal-pagination"></div>
+  </div>
+
+
+  <!-- 購入確認用モーダル -->
+  <div id="purchase-flow-modal" class="modal-overlay">
+    <div id="modal-body-content"
+      style="background: white; padding: 25px; border-radius: 15px; max-width: 400px; width: 90%; text-align: center; position: relative;">
+      <span onclick="closePurchaseModal()"
+        style="position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer;">&times;</span>
+
+      <div id="step-confirm">
+        <h2 style="margin-top: 0; color: #4a0e0e; border-bottom: none; font-size: 1.2rem;">注文内容の確認</h2>
+
+        <div
+          style="background: #f9f9f9; padding: 15px; border-radius: 10px; margin: 15px 0; display: flex; align-items: center; text-align: left;">
+          <img id="confirm-img" src="" alt="商品画像"
+            style="width: 70px; height: 70px; object-fit: cover; border-radius: 5px; margin-right: 15px; border: 1px solid #ddd;">
+
+          <div>
+            <p style="margin: 0; font-weight: bold; font-size: 0.9rem;">【バラ売り】ホフブロイ・オクトーバーフェストビア</p>
+            <p id="confirm-qty-display" style="margin: 5px 0 0 0; color: #666; font-size: 0.85rem;">数量: 1</p>
+            <p id="confirm-total" style="margin: 2px 0 0 0; color: #9a1e22; font-size: 1.1rem; font-weight: bold;">合計:
+              ¥680</p>
+          </div>
+        </div>
+
+        <button onclick="goToComplete()" class="purchase-button" style="flex: 1; box-shadow: none; font-size: 16px;">
+          お客様情報・配送先の入力へ進む
+        </button>
+
+        <button onclick="closePurchaseModal()" class="purchase-button" style="flex: 1; background-color: #fff; border: 2px solid #ddd; color: #666;
+        box-shadow: none; font-size: 16px;">
+          買い物を続ける
+        </button>
+      </div>
+
+      <div id="step-complete" style="display: none;">
+        <div style="font-size: 3rem; margin-bottom: 10px;">✅</div>
+        <h2 style="color: #9a1e22; border-bottom: none; margin-top: 0; font-size: 1.2rem;">ご注文完了</h2>
+        <p style="font-size: 0.9rem; color: #666;">ご注文ありがとうございました！</p>
+        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+        <button onclick="closePurchaseModal()" class="purchase-button"
+          style="width: 100%; background-color: #fff; border: 2px solid #fda90d; color: #fda90d; box-shadow: none; margin-bottom: 10px;">
+          買い物を続ける
+        </button>
+        <button onclick="goToTop()" class="purchase-button"
+          style="width: 100%; background-color: #fda90d; color: #332211; box-shadow: none;">
+          トップ画面へ戻る
+        </button>
+      </div>
+    </div>
+  </div>
+
+</body>
+
+</html>

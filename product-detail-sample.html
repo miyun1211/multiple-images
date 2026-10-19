@@ -975,6 +975,75 @@
         };
       }
     });
+
+
+    /*
+    ================================================================
+    ■ 購入ボタン後の画面
+    ================================================================
+    /* 購入フローの制御 */
+
+    // 全ての読み込みが終わってから実行するようにイベントリスナーの中に入れる
+    document.addEventListener("DOMContentLoaded", function () {
+
+      // 買い物かごボタンを取得
+      const buyBtn = document.querySelector('.purchase-button');
+
+      if (buyBtn) {
+        buyBtn.onclick = function (e) {
+          e.preventDefault();
+
+          // 1. 数量の取得
+          const qtyElement = document.getElementById('quantity');
+          const qty = qtyElement ? parseInt(qtyElement.value) : 1;
+
+          // 2. 金額の計算 (単価680円 × 数量)
+          const unitPrice = 680;
+          const totalPrice = unitPrice * qty;
+
+          // 3. メイン画像のURLを取得 (id="mainImage" から取得)
+          const mainImg = document.getElementById('mainImage');
+          const mainImgSrc = mainImg ? mainImg.src : "";
+
+          // 確認画面への反映
+          const confirmImg = document.getElementById('confirm-img');
+          const confirmQty = document.getElementById('confirm-qty-display');
+          const confirmTotal = document.getElementById('confirm-total');
+
+          if (confirmImg) confirmImg.src = mainImgSrc;
+          if (confirmQty) confirmQty.innerText = "数量: " + qty;
+          if (confirmTotal) confirmTotal.innerText = "合計: ¥" + totalPrice.toLocaleString();
+
+          // モーダルの表示
+          const purchaseModal = document.getElementById('purchase-flow-modal');
+          if (purchaseModal) {
+            purchaseModal.classList.add('modal-open');
+            document.getElementById('step-confirm').style.display = 'block';
+            document.getElementById('step-complete').style.display = 'none';
+          }
+        };
+      }
+    });
+
+    // 注文確定ボタン押下時
+    function goToComplete() {
+      document.getElementById('step-confirm').style.display = 'none';
+      document.getElementById('step-complete').style.display = 'block';
+    }
+
+    // モーダルを閉じる（買い物を続ける）
+    function closePurchaseModal() {
+      document.getElementById('purchase-flow-modal').classList.remove('modal-open');
+    }
+
+    // トップへ戻る（擬似的なリダイレクト）
+    function goToTop() {
+      // 実際には URL を指定します。例: window.location.href = 'index.html';
+      alert("トップ画面へ戻ります。");
+      location.reload();
+    }
+
+
   </script>
 
 
@@ -987,6 +1056,57 @@
     <div id="modalArrowLeft" class="modal-arrow left">&#10094;</div>
     <div id="modalArrowRight" class="modal-arrow right">&#10095;</div>
     <div id="modalPagination" class="modal-pagination"></div>
+  </div>
+
+
+  <!-- 購入確認用モーダル -->
+  <div id="purchase-flow-modal" class="modal-overlay">
+    <div id="modal-body-content"
+      style="background: white; padding: 25px; border-radius: 15px; max-width: 400px; width: 90%; text-align: center; position: relative;">
+      <span onclick="closePurchaseModal()"
+        style="position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer;">&times;</span>
+
+      <div id="step-confirm">
+        <h2 style="margin-top: 0; color: #4a0e0e; border-bottom: none; font-size: 1.2rem;">注文内容の確認</h2>
+
+        <div
+          style="background: #f9f9f9; padding: 15px; border-radius: 10px; margin: 15px 0; display: flex; align-items: center; text-align: left;">
+          <img id="confirm-img" src="" alt="商品画像"
+            style="width: 70px; height: 70px; object-fit: cover; border-radius: 5px; margin-right: 15px; border: 1px solid #ddd;">
+
+          <div>
+            <p style="margin: 0; font-weight: bold; font-size: 0.9rem;">【バラ売り】ホフブロイ・オクトーバーフェストビア</p>
+            <p id="confirm-qty-display" style="margin: 5px 0 0 0; color: #666; font-size: 0.85rem;">数量: 1</p>
+            <p id="confirm-total" style="margin: 2px 0 0 0; color: #9a1e22; font-size: 1.1rem; font-weight: bold;">合計:
+              ¥680</p>
+          </div>
+        </div>
+
+        <button onclick="goToComplete()" class="purchase-button" style="flex: 1; box-shadow: none; font-size: 16px;">
+          お客様情報・配送先の入力へ進む
+        </button>
+
+        <button onclick="closePurchaseModal()" class="purchase-button" style="flex: 1; background-color: #fff; border: 2px solid #ddd; color: #666;
+        box-shadow: none; font-size: 16px;">
+          買い物を続ける
+        </button>
+      </div>
+
+      <div id="step-complete" style="display: none;">
+        <div style="font-size: 3rem; margin-bottom: 10px;">✅</div>
+        <h2 style="color: #9a1e22; border-bottom: none; margin-top: 0; font-size: 1.2rem;">ご注文完了</h2>
+        <p style="font-size: 0.9rem; color: #666;">ご注文ありがとうございました！</p>
+        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+        <button onclick="closePurchaseModal()" class="purchase-button"
+          style="width: 100%; background-color: #fff; border: 2px solid #fda90d; color: #fda90d; box-shadow: none; margin-bottom: 10px;">
+          買い物を続ける
+        </button>
+        <button onclick="goToTop()" class="purchase-button"
+          style="width: 100%; background-color: #fda90d; color: #332211; box-shadow: none;">
+          トップ画面へ戻る
+        </button>
+      </div>
+    </div>
   </div>
 
 </body>
