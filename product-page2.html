@@ -611,6 +611,42 @@
       grid-area: description;
     }
 
+    .product-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .product-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border: 1px solid;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.4;
+    }
+
+    .product-badge-icon {
+      font-size: 16px;
+      line-height: 1;
+    }
+
+    .product-badge-cold {
+      color: #145b83;
+      background-color: #edf8ff;
+      border-color: #b8def2;
+    }
+
+    .product-badge-single {
+      color: #28633b;
+      background-color: #eff8f0;
+      border-color: #c5e2c9;
+    }
+
     .gallery-wrapper {
       grid-area: gallery;
     }
@@ -779,8 +815,21 @@
             Schneeeule Marlene
           </h2>
           <p id="imageDescription" style="color: #666; font-size: 1rem; line-height: 1.6; margin-top: 10px;">
-            ベルリンの伝統的なベルリナーヴァイセ。50年物の瓶から取り出した特別な酵母と共に復活し、瓶内二次発酵で生まれる複雑な香りと深みが特徴です。
+            ベルリンの醸造所シュネーオイレによるベルリナーヴァイセです。50年物の瓶から見つかった酵母を受け継ぎ、瓶内二次発酵で造られます。ブレタノマイセ由来の複雑な香りと、深みのある爽やかな酸味が特徴です。
           </p>
+          <p style="color: #666; font-size: 1rem; line-height: 1.6; margin-top: 10px;">
+            シロップを加えずそのまま楽しめます。酵母の働きで時間とともに味わいが変化するため、熟成による変化もお楽しみください。
+          </p>
+          <div class="product-badges" aria-label="販売・保管について">
+            <span class="product-badge product-badge-cold">
+              <span class="product-badge-icon" aria-hidden="true">❄</span>
+              要冷蔵（18℃以下）
+            </span>
+            <span class="product-badge product-badge-single">
+              <span class="product-badge-icon" aria-hidden="true">◎</span>
+              1本から購入可
+            </span>
+          </div>
         </div>
 
         <!-- 購入エリア -->
@@ -857,14 +906,11 @@
     <div id="product-intro-tab" class="tab-content" style="display: block;">
       <h3 style="border-left: 4px solid var(--primary-red); padding-left: 8px;">
         ベルリンに寄せて　伝統的なベルリナーヴァイセが甦る</h3>
-      <p>・ベルリンにあるベルリナーヴァイセ専門の醸造所、シュネーオイレが本格的なベルリナーヴァイセを復活させました。
-        <br>・50年物の瓶から取り出された特別な酵母を使い、瓶内二次発酵で複雑で深みのある風味を形成しています。
-        <br>・酸味と果実感、ほのかな乳酸のコクが織りなす、やや爽やかで上品な味わいが特徴です。
+      <p>
+        ベルリナーヴァイセ専門の醸造所シュネーオイレが、50年物の瓶から見つかった酵母を用いて復活させたビールです。瓶内二次発酵によるブレタノマイセの複雑な香りと、深みのある爽やかな酸味をお楽しみいただけます。
       </p>
-      <br>
-
-      <p>「北のシャンパン」とも呼ばれるベルリナーヴァイセは、ざらついた酸味と深い複雑さが魅力です。瓶を揺らさず、上澄みと沈殿部分を違う印象で楽しむのもおすすめです。</p>
-      <p>◎本格的なベルリナーヴァイセで、食前酒やおつまみとの相性も抜群です。</p>
+      <p>シロップを加えずそのままお楽しみいただけます。酵母の働きで時間とともに味わいが変化するため、熟成による変化もお楽しみください。</p>
+      <p><strong>販売・保管について：</strong>こちらは1本から購入できるバラ売り商品です。酵母を含むため、冷蔵庫で18℃以下に保管してください。</p>
 
       <table>
         <tr>
