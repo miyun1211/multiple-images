@@ -594,6 +594,144 @@
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     }
 
+    #product-info {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas:
+        "description"
+        "gallery"
+        "purchase";
+    }
+
+    .product-copy-column {
+      display: contents;
+    }
+
+    .text-wrapper {
+      grid-area: description;
+    }
+
+    .gallery-wrapper {
+      grid-area: gallery;
+    }
+
+    #purchase-area {
+      grid-area: purchase;
+    }
+
+    @media (max-width: 480px) {
+      .product-container {
+        padding: 16px;
+        padding-bottom: 120px;
+      }
+
+      .header-container {
+        padding: 10px 16px;
+        gap: 12px;
+      }
+
+      .logo-area a {
+        font-size: 24px;
+      }
+
+      .nav-icons {
+        gap: 6px;
+      }
+
+      .nav-icon {
+        width: 42px;
+        height: 42px;
+      }
+
+      h1 {
+        font-size: 21px;
+      }
+
+      h2 {
+        font-size: 19px;
+      }
+
+      #purchase-area {
+        padding: 18px 14px;
+      }
+
+      .price-main {
+        font-size: 46px;
+      }
+
+      .purchase-action-row {
+        gap: 8px;
+      }
+
+      .purchase-button {
+        font-size: 16px;
+      }
+
+      .fixed-cart-button {
+        right: 12px;
+        padding: 10px 14px;
+        font-size: 14px;
+      }
+
+      .scroll-to-top {
+        right: 12px;
+      }
+
+      th,
+      td {
+        padding: 8px;
+      }
+    }
+
+    @media (min-width: 768px) {
+      .product-container,
+      .header-container {
+        max-width: 1200px;
+      }
+
+      .product-container {
+        padding: 32px;
+        padding-bottom: 120px;
+      }
+
+      #product-info {
+        grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+        grid-template-areas:
+          "gallery description"
+          "gallery purchase";
+        gap: 32px;
+        align-items: start;
+      }
+
+      .product-gallery,
+      #purchase-area {
+        min-width: 0;
+      }
+
+      .product-gallery {
+        padding: 16px;
+      }
+
+      .main-image-container {
+        margin-bottom: 16px;
+      }
+
+      .fixed-cart-button {
+        right: 32px;
+      }
+
+      .scroll-to-top {
+        right: 32px;
+      }
+    }
+
+    @media (min-width: 1200px) {
+      .product-container {
+        padding-right: 40px;
+        padding-left: 40px;
+      }
+    }
+
     /* ▲▲▲ 変更ここまで ▲▲▲ */
   </style>
 </head>
@@ -635,13 +773,46 @@
 
     <!-- 画像表示 -->
     <section id="product-info">
-      <div class="text-wrapper" style="width: 100%;">
-        <h2 style="border-bottom: 2px solid var(--primary-red); padding-bottom: 8px;">
-          Schneeeule Marlene
-        </h2>
-        <p id="imageDescription" style="color: #666; font-size: 1rem; line-height: 1.6; margin-top: 10px;">
-          ベルリンの伝統的なベルリナーヴァイセ。50年物の瓶から取り出した特別な酵母と共に復活し、瓶内二次発酵で生まれる複雑な香りと深みが特徴です。
-        </p>
+      <div class="product-copy-column">
+        <div class="text-wrapper" style="width: 100%;">
+          <h2 style="border-bottom: 2px solid var(--primary-red); padding-bottom: 8px;">
+            Schneeeule Marlene
+          </h2>
+          <p id="imageDescription" style="color: #666; font-size: 1rem; line-height: 1.6; margin-top: 10px;">
+            ベルリンの伝統的なベルリナーヴァイセ。50年物の瓶から取り出した特別な酵母と共に復活し、瓶内二次発酵で生まれる複雑な香りと深みが特徴です。
+          </p>
+        </div>
+
+        <!-- 購入エリア -->
+        <section id="purchase-area">
+          <div class="price-container-a">
+            <span class="price-label-left">販売価格</span>
+            <div class="price-main-row">
+              <span class="price-symbol">¥</span>
+              <span class="price-main">800</span>
+              <span class="price-sub">(税込) / 本</span>
+            </div>
+          </div>
+
+          <div class="purchase-action-row">
+            <div class="quantity-box">
+              <label for="quantity">数量</label>
+              <select id="quantity" name="quantity">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+              </select>
+            </div>
+
+            <button class="purchase-button">
+              <svg class="cart-icon" viewBox="0 0 24 24">
+                <path
+                  d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z" />
+              </svg>
+              買い物かご
+            </button>
+          </div>
+        </section>
       </div>
 
       <div class="gallery-wrapper" style="width: 100%; margin-bottom: 20px;">
@@ -669,39 +840,6 @@
   </div>
   </section>
 
-
-
-  <!-- 購入エリア -->
-  <section id="purchase-area">
-
-    <div class="price-container-a">
-      <span class="price-label-left">販売価格</span>
-      <div class="price-main-row">
-        <span class="price-symbol">¥</span>
-        <span class="price-main">800</span>
-        <span class="price-sub">(税込) / 本</span>
-      </div>
-    </div>
-
-    <div class="purchase-action-row">
-      <div class="quantity-box">
-        <label for="quantity">数量</label>
-        <select id="quantity" name="quantity">
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-        </select>
-      </div>
-
-      <button class="purchase-button">
-        <svg class="cart-icon" viewBox="0 0 24 24">
-          <path
-            d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z" />
-        </svg>
-        買い物かご
-      </button>
-    </div>
-  </section>
 
   <!-- <div class="quick-jump-links">
       <a href="#product-details">詳細情報</a>
